@@ -5,7 +5,7 @@ let cy;
 const selectedSkills = new Set();
 
 async function loadSkills() {
-    const response = await fetch('skills.json');
+    const response = await fetch('data/skills.json');
     skills = await response.json();
     createGraph(skills);
 }

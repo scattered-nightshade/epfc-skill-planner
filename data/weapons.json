@@ -1,0 +1,44 @@
+[
+    {
+        "name": "UP9",
+        "type": "secondary",
+        "weight": 3,
+        "space": 3
+    },
+    {
+        "name": "K45",
+        "type": "secondary",
+        "weight": 3,
+        "space": 3
+    },
+    {
+        "name": "S97",
+        "type": "secondary",
+        "weight": 4,
+        "space": 4
+    },
+    {
+        "name": "480 MCS",
+        "type": "primary",
+        "weight": 7,
+        "space": 7
+    },
+    {
+        "name": "CBR-C",
+        "type": "primary",
+        "weight": 6,
+        "space": 6
+    },
+    {
+        "name": "F57",
+        "type": "primary",
+        "weight": 8,
+        "space": 8
+    },
+    {
+        "name": "The Lance",
+        "type": "primary",
+        "weight": 6,
+        "space": 5
+    }
+]
