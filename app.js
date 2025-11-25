@@ -29,7 +29,7 @@ function createGraph(skills) {
         elements.push({
             data: { 
                 id: skill.id, 
-                label: skill.id 
+                label: skill.name 
             },
             position: {
                 x: skill.x,
