@@ -107,7 +107,8 @@ function addNodeClickHandler() {
         if (selectedSkills.has(skillId)) {
             selectedSkills.delete(skillId);
             node.style('border-width', 0);
-        } else {
+        } 
+        else {
             selectedSkills.add(skillId);
             node.style('border-width', 4);
             node.style('border-color', 'white');
@@ -117,8 +118,12 @@ function addNodeClickHandler() {
     });
 }
 
-//Works fine when youre adding skills but everything gets fucked up when trying to remove a skill, will need to look into that
 function updateSkillEffects() {
+    
+    let weight = 0;
+
+    let agility = 0;
+    
     let conMaxStamina = 0;
     let afDrillSpeed = 0;
     let fhLockpickSpeed = 0;
@@ -147,7 +152,7 @@ function updateSkillEffects() {
             coreSkillsSelected.push(skill.name);
         }
 
-        if (!skill.major_skill) {
+
             switch (skill.group) {
                 case "ea":
                     eaHackSpeed += 5;
@@ -183,42 +188,33 @@ function updateSkillEffects() {
                 case "con":
                     conMaxStamina += 6;
                     break
+            case "agil":
+                agility += 1;
                 
-            }
+            
         }
-
-        document.getElementById('conValue').innerText = formatSkillString(conMaxStamina);
-        document.getElementById('afValue').innerText = formatSkillString(afDrillSpeed);
-        document.getElementById('fhLockpickingValue').innerText = formatSkillString(fhLockpickSpeed);
-        document.getElementById('fhReloadSpeedValue').innerText = formatSkillString(fhReloadSpeed);
-        document.getElementById('masValue').innerText = formatSkillString(masDisguiseDetectionSpeed);
-        document.getElementById('disValue').innerText = formatSkillString(disSuspiciousDetectionSpeed);
-        document.getElementById('lpDetectionValue').innerText = formatSkillString(lpDetectionSpeed);
-        document.getElementById('lpDodgeValue').innerText = formatSkillString(lpDodgeRate);
-        document.getElementById('eaSpeedValue').innerText = formatSkillString(eaHackSpeed);
-        document.getElementById('ciCritValue').innerText = formatSkillString(ciCritRate);
-        document.getElementById('ciResourceValue').innerText = formatSkillString(ciHackResourceCost);
-        document.getElementById('teValue').innerText = formatSkillString(teTechItems);
-        document.getElementById('sdValue').innerText = formatSkillString(sdCameraDetection);
-
     });
+
+    document.getElementById('stamina').innerText = (100 + conMaxStamina).toString();
+    document.getElementById('staminaRegenRate').innerText = (15 * (1.0 + (0.03 * conMaxStamina)) * (agility >= 2 ? 1.5 : 1)).toString();
+    document.getElementById('dodgeChance').innerText = lpDodgeRate.toString(); // Need to consider weight at some point: Each point of weight beyond 12 reduces your dodge change by a multiplicative ~2.08%.
+    document.getElementById('critChance').innerText = ciCritRate.toString();
+    document.getElementById('reloadSpeed').innerText = (100 + fhReloadSpeed).toString();
+    document.getElementById('appliedForceSpeed').innerText = (100 + afDrillSpeed).toString();
+    document.getElementById('lockpickingSpeed').innerText = (100 + fhLockpickSpeed).toString();
+    document.getElementById('hackingSpeed').innerText = (100 + eaHackSpeed).toString();
+    document.getElementById('networkResourcesUsage').innerText = (1.0 - (ciHackResourceCost / 100)).toString();
+    document.getElementById('techUseSpeed').innerText = (100 + teTechItems).toString();
+    document.getElementById('crouchedDetectionSpeed').innerText = (1.0 - (lpDetectionSpeed / 100)).toString();
+    document.getElementById('suspiciousDetectionSpeed').innerText = (1.0 - (disSuspiciousDetectionSpeed / 100)).toString();
+    document.getElementById('disguisedDetectionSpeed').innerText = (1.0 - (masDisguiseDetectionSpeed / 100)).toString();
+    document.getElementById('cameraDetectionSpeed').innerText = (1.0 - (sdCameraDetection / 100)).toString();
 
     let coreSkillMessage = "";
     if (coreSkillsSelected.length == 0) {
         coreSkillMessage = "You need to select at least one core skill!";
     }
     document.getElementById('coreSkillWarning').innerText = coreSkillMessage;
-}
-
-function formatSkillString(value) {
-    let newString = "";
-    if (value >= 0) {
-        newString = "+" + value.toString() + "%";
-    }
-    else {
-        newString = value.toString() + "%";
-    }
-    return newString;
 }
 
 loadSkills();

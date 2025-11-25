@@ -2,47 +2,46 @@
 <html>
     
 <head>
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <main>
-        <div class="skills-container">
-            <div class="tabs"></div>
+    <main class="skills-container">
+        <div class="tabs">
+            <button data-tab="skills">Skills</button>
+            <button data-tab="combat">Combat Skills</button>
+            <button data-tab="inventory">Inventory</button>
+        </div>
             <div class="skill-web" id="skill-web"></div>
             <div class="skill-effects">
-                <p>Conditioning Max Stamina: <span id="conValue">+0%</span></p>
-                <p>Applied Force Drill/Saw Speed: <span id="afValue">+0%</span></p>
-                <p>Fast Hands Lockpicking Speed: <span id="fhLockpickingValue">0%</span></p>
-                <p>Fast Hands Reload Speed: <span id="fhReloadSpeedValue">0%</span></p>
-                <p>Masquerade Detection Speed: <span id="masValue">0%</span></p>
-                <p>Discretion Detection Speed: <span id="disValue">0%</span></p>
-                <p>Low Profile Detection Speed: <span id="lpDetectionValue">0%</span></p>
-                <p>Low Profile Dodge Chance: <span id="lpDodgeValue">0%</span></p>
-                <p>Efficient Algorithms Hack Speed: <span id="eaSpeedValue">0%</span></p>
-                <p>Critical Insights Crit Chance: <span id="ciCritValue">0%</span></p>
-                <p>Critical Insights Network Resource: <span id="ciResourceValue">0%</span></p>
-                <p>Technical Expert Deployment Speed: <span id="teValue">0%</span></p>
-                <p>Signal Distruption Detection Speed: <span id="sdValue">0%</span></p>
-                
-                <!-- This is just buffer stuff to increase the size of the graph since I can't for some reason make the skills-container take up 100% of the height of the viewport -->
-                <p>a</p> 
-                <p>a</p>
-                <p>a</p>
-                <p>a</p>
-                <p>a</p>
-                <p>a</p>
-                <p>a</p>
-                <p>a</p>
-                <p>a</p>
-                <p>a</p>
-            </div>
+            <h1>Stats Overview</h1>
+            <p>Health: <span id="health">100</span></p>
+            <p>Stamina: <span id="stamina">100</span></p>
+            <p>Stamina Regeneration Rate: <span id="staminaRegenRate">15</span>/s</p>
+            <p>Weight: <span id="weight">0</span></p>
+            <p>Dodge Chance: <span id="dodgeChance">0</span>%</p>
+            <p>Crit Chance: <span id="critChance">0</span>%</p>
+            <p>Reload Speed: <span id="reloadSpeed">100</span>%</p>
+            <br>
+            <p>Saw/Drill Speed: <span id="appliedForceSpeed">100</span>%</p>
+            <p>Lockpicking Speed: <span id="lockpickingSpeed">100</span>%</p>
+            <p>Hacking Speed: <span id="hackingSpeed">100</span>%</p>
+            <p>Network Resources Usage: <span id="networkResourcesUsage">1</span>x</p>
+            <p>Tech Item Use Speed: <span id="techUseSpeed">100%</span></p>
+            <br>
+            <p>Crouched Detection Speed: <span id="crouchedDetectionSpeed">1</span>x</p>
+            <p>Suspicious Actions Detection Speed: <span id="suspiciousDetectionSpeed">1</span>x</p>
+            <p>Disguised Detection Speed: <span id="disguisedDetectionSpeed">1</span>x</p>
+            <p>Camera Detection Speed: <span id="cameraDetectionSpeed">1</span>x</p>
+            <br>
+            <!--<h1>Encumberance Information</h1>-->
+            <!--Not sure if I actually need this lol, will figure out if I do when I get around to items-->
         </div>
     </main>
 
     <script src="https://unpkg.com/cytoscape@3.24.0/dist/cytoscape.min.js"></script>
 
-    <script src="./app.js"></script>
+    <script src="app.js"></script>
 </body>
 
 </html>
