@@ -91,7 +91,10 @@ function createGraph(skills) {
             }
         ],
         layout: { name: 'preset' },
-        autoungrabify: true
+        autoungrabify: true,
+        wheelSensitivity: 0.1,
+        minZoom: 0.5,
+        maxZoom: 5
     });
 
 
@@ -153,41 +156,41 @@ function updateSkillEffects() {
         }
 
 
-            switch (skill.group) {
-                case "ea":
-                    eaHackSpeed += 5;
-                    eaHackDetection -= 5;
-                    break;
-                case "ci":
-                    ciHackResourceCost += 5;
-                    ciCritRate += 1.5;
-                    break;
-                case "sd":
-                    sdCameraDetection += 5;
-                    break;
-                case "te":
-                    teTechItems += 5;
-                    break;
-                case "fh":
-                    fhLockpickSpeed += 5;
-                    fhReloadSpeed += 3;
-                    break;
-                case "lp":
-                    lpDetectionSpeed += 4;
-                    lpDodgeRate += 3;
-                    break;
-                case "dis":
-                    disSuspiciousDetectionSpeed += 5;
-                    break;
-                case "mas":
-                    masDisguiseDetectionSpeed += 4;
-                    break;
-                case "af":
-                    afDrillSpeed += 5;
-                    break
-                case "con":
-                    conMaxStamina += 6;
-                    break
+        switch (skill.group) {
+            case "ea":
+                eaHackSpeed += 5;
+                eaHackDetection -= 5;
+                break;
+            case "ci":
+                ciHackResourceCost += 5;
+                ciCritRate += 1.5;
+                break;
+            case "sd":
+                sdCameraDetection += 5;
+                break;
+            case "te":
+                teTechItems += 5;
+                break;
+            case "fh":
+                fhLockpickSpeed += 5;
+                fhReloadSpeed += 3;
+                break;
+            case "lp":
+                lpDetectionSpeed += 4;
+                lpDodgeRate += 3;
+                break;
+            case "dis":
+                disSuspiciousDetectionSpeed += 5;
+                break;
+            case "mas":
+                masDisguiseDetectionSpeed += 4;
+                break;
+            case "af":
+                afDrillSpeed += 5;
+                break
+            case "con":
+                conMaxStamina += 6;
+                break
             case "agil":
                 agility += 1;
                 
