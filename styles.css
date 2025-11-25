@@ -1,0 +1,28 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background-color: grey;
+}
+
+.skills-container {
+    display: flex;
+    height: 100%;
+}
+
+.tabs {
+    flex: 1
+}
+
+.skill-web {
+    flex: 15;
+}
+
+.skill-effects {
+    flex: 4;
+    background-color: #141414;
+    height: 100%;
+    color: white;
+    padding: 1rem;
+}
