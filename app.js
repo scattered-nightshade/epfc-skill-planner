@@ -58,13 +58,12 @@ function createGraph(skills) {
             { 
                 selector: 'node', 
                 style: { 
-                    'background-color': '#80081500',
                     'overlay-padding': '0px',
                     'background-opacity': 0,
                     'background-image': function(skill) {
-                        return `images/${skill.data('group')}.png`;
+                        return `images/skills/${skill.data('group')}.png`;
                     },
-                    'opacity': 0.5,
+                    'opacity': 0.75,
                 },
             },
             {
@@ -87,7 +86,7 @@ function createGraph(skills) {
                 selector: 'edge', 
                 style: { 
                     'width': 6, 
-                    'line-color': '#cccccc' 
+                    'line-color': '#aaaaaa' 
                 } 
             }
         ],
@@ -111,7 +110,7 @@ function addNodeClickHandler() {
         if (selectedSkills.has(skillId)) {
             if (canDeselect()) {
                 selectedSkills.delete(skillId);
-                node.style('opacity', 0.5);
+                setSkillOpacity(node, false);
             }
             else {
                 return;
@@ -120,7 +119,7 @@ function addNodeClickHandler() {
         else {
             if (isSkillConnected(skill)){
                 selectedSkills.add(skillId);
-                node.style('opacity', 1);              
+                setSkillOpacity(node, true);
             }
             else {
                 return;
@@ -129,6 +128,15 @@ function addNodeClickHandler() {
 
         updateSkillEffects();
     });
+}
+
+function setSkillOpacity(node, enabled = false) {
+    if (enabled) {
+        node.style('opacity', 1);
+    }
+    else {
+        node.style('opacity', 0.75);
+    }
 }
 
 function isSkillConnected(skill) {
@@ -143,6 +151,21 @@ function isSkillConnected(skill) {
 function canDeselect(skill) {
     return true; // Need to make it so that people cant de-select skills that would cause "stranded" skills
 }
+
+function updateSkillLines() {
+    cy.edges().forEach(edge => {
+        const preexistingSkill = selectedSkills.has(edge.source().id());
+        const newSkill = selectedSkills.has(edge.target().id());
+
+        if (preexistingSkill && newSkill) {
+            edge.style('line-color', '#ffffff');
+        } 
+        else {
+            edge.style('line-color', '#aaaaaa');
+        }
+    });
+}
+
 
 function updateSkillEffects() {
     
