@@ -29,7 +29,8 @@ function createGraph(skills) {
         elements.push({
             data: { 
                 id: skill.id, 
-                label: skill.name 
+                label: skill.name,
+                group: skill.group
             },
             position: {
                 x: skill.x,
@@ -57,42 +58,39 @@ function createGraph(skills) {
             { 
                 selector: 'node', 
                 style: { 
-                    'label': 'data(label)',
-                    'text-valign': 'center',
-                    'text-halign': 'center',
-                    'background-color': '#888888',
-                    'color': 'black',
-                    'overlay-padding': '0px'
-                } 
+                    'background-color': '#80081500',
+                    'overlay-padding': '0px',
+                    'background-opacity': 0,
+                    'background-image': function(skill) {
+                        return `images/${skill.data('group')}.png`;
+                    }
+                },
             },
-            { 
-                selector: '.core', 
-                style: { 
-                    'background-color': '#ffaa00' 
-                } 
+            {
+                selector: '.core',
+                style: {
+                    'width': '40',
+                    'height': '40',
+                    'background-fit': 'cover'
+                }
             },
-            { 
-                selector: '.major', 
-                style: { 
-                    'background-color': '#0099ff' 
-                } 
-            },
-            { 
-                selector: '.minor', 
-                style: { 
-                    'background-color': '#00ffaa' 
-                } 
+            {
+                selector: '.major',
+                style: {
+                    'width': '40',
+                    'height': '40',
+                    'background-fit': 'cover'
+                }
             },
             { 
                 selector: 'edge', 
                 style: { 
-                    'width': 4, 
+                    'width': 6, 
                     'line-color': '#cccccc' 
                 } 
             }
         ],
         layout: { name: 'preset' },
-        autoungrabify: true,
         wheelSensitivity: 0.1,
         minZoom: 0.5,
         maxZoom: 5
@@ -111,18 +109,18 @@ function addNodeClickHandler() {
 
         if (selectedSkills.has(skillId)) {
             if (canDeselect()) {
-            selectedSkills.delete(skillId);
-            node.style('border-width', 0);
-        } 
-        else {
+                selectedSkills.delete(skillId);
+                node.style('border-width', 0);
+            }
+            else {
                 return;
             }
         } 
         else {
             if (isSkillConnected(skill)){
-            selectedSkills.add(skillId);
-            node.style('border-width', 4);
-            node.style('border-color', 'white');
+                selectedSkills.add(skillId);
+                node.style('border-width', 4);
+                node.style('border-color', 'white');                
             }
             else {
                 return;
@@ -242,7 +240,7 @@ function updateSkillEffects() {
     if (coreSkillsSelected.length == 0) {
         coreSkillMessage = "You need to select at least one core skill!";
     }
-    document.getElementById('coreSkillWarning').innerText = coreSkillMessage;
+    //document.getElementById('coreSkillWarning').innerText = coreSkillMessage;
 }
 
 loadSkills();
