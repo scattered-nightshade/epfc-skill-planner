@@ -298,4 +298,19 @@ function updateSkillEffects() {
     //document.getElementById('coreSkillWarning').innerText = coreSkillMessage;
 }
 
+function restart() {
+    selectedSkills.clear();
+
+    cy.nodes().forEach(node => {
+        setSkillOpacity(node, false);
+    });
+
+    cy.edges().forEach(edge => {
+        edge.style('line-color', '#888888');
+    });
+
+    updateSkillEffects();
+    updateURL();
+}
+
 loadSkills();
