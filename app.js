@@ -64,7 +64,7 @@ function createGraph(skills) {
                     'background-image': function(skill) {
                         return `images/skills/${skill.data('group')}.png`;
                     },
-                    'opacity': 0.75,
+                    'opacity': 0.35,
                 },
             },
             {
@@ -87,7 +87,7 @@ function createGraph(skills) {
                 selector: 'edge', 
                 style: { 
                     'width': 6, 
-                    'line-color': '#aaaaaa' 
+                    'line-color': '#888888' 
                 } 
             }
         ],
@@ -138,7 +138,7 @@ function setSkillOpacity(node, enabled = false) {
         node.style('opacity', 1);
     }
     else {
-        node.style('opacity', 0.75);
+        node.style('opacity', 0.35);
     }
 }
 
@@ -164,7 +164,7 @@ function updateSkillLines() {
             edge.style('line-color', '#ffffff');
         } 
         else {
-            edge.style('line-color', '#aaaaaa');
+            edge.style('line-color', '#888888');
         }
     });
 }
