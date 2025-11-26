@@ -63,7 +63,8 @@ function createGraph(skills) {
                     'background-opacity': 0,
                     'background-image': function(skill) {
                         return `images/${skill.data('group')}.png`;
-                    }
+                    },
+                    'opacity': 0.5,
                 },
             },
             {
@@ -110,7 +111,7 @@ function addNodeClickHandler() {
         if (selectedSkills.has(skillId)) {
             if (canDeselect()) {
                 selectedSkills.delete(skillId);
-                node.style('border-width', 0);
+                node.style('opacity', 0.5);
             }
             else {
                 return;
@@ -119,8 +120,7 @@ function addNodeClickHandler() {
         else {
             if (isSkillConnected(skill)){
                 selectedSkills.add(skillId);
-                node.style('border-width', 4);
-                node.style('border-color', 'white');                
+                node.style('opacity', 1);              
             }
             else {
                 return;
