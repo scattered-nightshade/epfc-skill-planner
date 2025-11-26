@@ -36,6 +36,7 @@ function createGraph(skills) {
                 y: skill.y
             },
             locked: true,
+            grabbable: false,
             classes: skillType
         });
 
@@ -103,22 +104,46 @@ function createGraph(skills) {
 }
 
 function addNodeClickHandler() {
-    cy.on('tap', 'node', (evt) => {
-        const node = evt.target;
+    cy.on('tapstart', 'node', (event) => {
+        const node = event.target;
         const skillId = node.id();
+        const skill = skills.find(_skill => _skill.id == skillId);
 
         if (selectedSkills.has(skillId)) {
+            if (canDeselect()) {
             selectedSkills.delete(skillId);
             node.style('border-width', 0);
         } 
         else {
+                return;
+            }
+        } 
+        else {
+            if (isSkillConnected(skill)){
             selectedSkills.add(skillId);
             node.style('border-width', 4);
             node.style('border-color', 'white');
+            }
+            else {
+                return;
+            }
         }
 
         updateSkillEffects();
     });
+}
+
+function isSkillConnected(skill) {
+    if (selectedSkills.size == 0 & skill.core_skill) {
+        return true;
+    }
+
+    const selectedSkillNeighbours = skill.connections;
+    return selectedSkillNeighbours.some(neighbour => selectedSkills.has(neighbour));
+}
+
+function canDeselect(skill) {
+    return true; // Need to make it so that people cant de-select skills that would cause "stranded" skills
 }
 
 function updateSkillEffects() {
