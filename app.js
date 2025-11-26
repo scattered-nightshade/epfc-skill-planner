@@ -8,6 +8,7 @@ async function loadSkills() {
     const response = await fetch('data/skills.json');
     skills = await response.json();
     createGraph(skills);
+    loadSkillsFromURL();
 }
 
 function createGraph(skills) {
@@ -126,7 +127,9 @@ function addNodeClickHandler() {
             }
         }
 
+        updateSkillLines();
         updateSkillEffects();
+        updateURL();
     });
 }
 
@@ -164,6 +167,35 @@ function updateSkillLines() {
             edge.style('line-color', '#aaaaaa');
         }
     });
+}
+
+function updateURL() {
+    const skillArray = Array.from(selectedSkills);
+    const encoded = encodeURIComponent(skillArray.join(','));
+    const newUrl = `${window.location.origin}${window.location.pathname}?skills=${encoded}`;
+
+    window.history.replaceState(null, '', newUrl);
+}
+
+function loadSkillsFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlSkills = urlParams.get('skills');
+
+    if (!urlSkills) {
+        return
+    }
+
+    const skillIds = decodeURIComponent(urlSkills).split(',');
+    skillIds.forEach(skillId => selectedSkills.add(skillId));
+
+    cy.nodes().forEach(node => {
+        if (selectedSkills.has(node.id())) {
+            setSkillOpacity(node, true);
+        }
+    });
+
+    updateSkillLines();
+    updateSkillEffects();
 }
 
 
