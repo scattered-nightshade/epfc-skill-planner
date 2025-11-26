@@ -1,8 +1,11 @@
 "use strict";
 
+const levelCap = 55;
 let skills = [];
-let cy;
 const selectedSkills = new Set();
+
+let cy;
+let currentlyHoveredNode;
 
 async function loadSkills() {
     const response = await fetch('data/skills.json');
@@ -99,7 +102,7 @@ function createGraph(skills) {
 
 
     addNodeClickHandler();
-
+    addHoverHighlight();
 }
 
 function addNodeClickHandler() {
@@ -132,6 +135,62 @@ function addNodeClickHandler() {
         updateURL();
     });
 }
+
+function addHoverHighlight() {
+
+    cy.on('mouseover', 'node', (event) => {
+        currentlyHoveredNode = event.target;
+        refreshHighlight();
+    });
+
+    cy.on('mouseout', 'node', (event) => {
+        currentlyHoveredNode = null;
+        clearHighlight();
+    });
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Shift') {
+            refreshHighlight();
+        }
+    });
+
+    window.addEventListener('keyup', (event) => {
+        if (event.key === 'Shift') {
+            clearHighlight();
+        }
+    });
+
+    function refreshHighlight() {
+        if (!currentlyHoveredNode || !isShiftDown()) {
+            clearHighlight();
+            return;
+        }
+
+        const group = currentlyHoveredNode.data('group');
+
+        cy.nodes().forEach(node => {
+            if (node.data('group') == group) {
+                node.style('border-width', '70px');
+                node.style('border-color', '#00eeff');
+            }
+            else {
+                node.style('border-width', 0);
+            }
+        });
+    }
+
+    function clearHighlight() {
+        cy.nodes().forEach(node => {
+            node.style('border-width', 0);
+        });
+    }
+
+    function isShiftDown() {
+        return window.event && window.event.shiftKey;
+    }
+}
+
+
 
 function setSkillOpacity(node, enabled = false) {
     if (enabled) {
@@ -206,6 +265,7 @@ function updateSkillEffects() {
     let agility = 0;
     
     let conMaxStamina = 0;
+    let conStamRegen = 0;
     let afDrillSpeed = 0;
     let fhLockpickSpeed = 0;
     let fhReloadSpeed = 0;
@@ -265,19 +325,19 @@ function updateSkillEffects() {
                 break;
             case "af":
                 afDrillSpeed += 5;
-                break
+                break;
             case "con":
                 conMaxStamina += 6;
-                break
+                conStamRegen += 0.03;
+                break;
             case "agil":
                 agility += 1;
-                
-            
+                break;
         }
     });
 
     document.getElementById('stamina').innerText = (100 + conMaxStamina).toString();
-    document.getElementById('staminaRegenRate').innerText = (15 * (1.0 + (0.03 * conMaxStamina)) * (agility >= 2 ? 1.5 : 1)).toString();
+    document.getElementById('staminaRegenRate').innerText = (15 * (1.0 + conStamRegen) * (agility >= 2 ? 1.5 : 1)).toString();
     document.getElementById('dodgeChance').innerText = lpDodgeRate.toString(); // Need to consider weight at some point: Each point of weight beyond 12 reduces your dodge change by a multiplicative ~2.08%.
     document.getElementById('critChance').innerText = ciCritRate.toString();
     document.getElementById('reloadSpeed').innerText = (100 + fhReloadSpeed).toString();
