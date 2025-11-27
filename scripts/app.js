@@ -23,42 +23,58 @@ async function loadSkills() {
     loadSkillsFromURL();
 }
 
-function updateURL() {
-    const skillArray = Array.from(selectedSkills);
-    const combatArray = Array.from(selectedCombatSkills);
 
-    const encodedSkills = encodeURIComponent(skillArray.join(','));
-    const encodedCombatSkills = encodeURIComponent(combatArray.join(','));
+//Idk how this actually works lol, just stole this from stackoverflow
+function encodeBitflags(selectedSet) {
+    let bitflag = 0n;
 
-    const params = new URLSearchParams();
+    selectedSet.forEach(id => {
+        const index = parseInt(id);
+        if (!isNaN(index)) {
+            bitflag |= (1n << BigInt(index));
+        }
+    });
 
-    if (skillArray.length > 0) {
-        params.set('skills', encodedSkills);    
+    return bitflag.toString(36);
+}
+
+function decodeBitflags(bitflags, skill) {
+    if (!bitflags) {
+        return;
     }
 
-    if (combatArray.length > 0) {
-        params.set('combat', encodedCombatSkills);
+    let bitflag = BigInt(`0x${parseInt(bitflags, 36).toString(16)}`);
+
+    let index = 0;
+    while (bitflag > 0n) {
+        if (bitflag & 1n) {
+            skill.add(index.toString());
+        }
+        bitflag >>= 1n;
+        index++;
+    }
+}
+
+function updateURL() {
+    const params = new URLSearchParams();
+
+    if (selectedSkills.size > 0) {
+        params.set('skills', encodeBitflags(selectedSkills));
+    }
+
+    if (selectedCombatSkills.size > 0) {
+        params.set('combat', encodeBitflags(selectedCombatSkills));
     }
 
     const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
     window.history.replaceState(null, '', newUrl);
 }
 
-
 function loadSkillsFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
 
-    const urlSkills = urlParams.get('skills');
-    if (urlSkills) {
-        const skillIds = decodeURIComponent(urlSkills).split(',');
-        skillIds.forEach(id => selectedSkills.add(id));
-    }
-
-    const urlCombatSkills = urlParams.get('combat');
-    if (urlCombatSkills) {
-        const combatIds = decodeURIComponent(urlCombatSkills).split(',');
-        combatIds.forEach(id => selectedCombatSkills.add(id));
-    }
+    decodeBitflags(urlParams.get('skills'), selectedSkills);
+    decodeBitflags(urlParams.get('combat'), selectedCombatSkills);
 
     skillsGraph.nodes().forEach(node => {
         if (selectedSkills.has(node.id())) {
@@ -68,7 +84,7 @@ function loadSkillsFromURL() {
 
     combatSkillsGraph.nodes().forEach(node => {
         if (selectedCombatSkills.has(node.id())) {
-            setCombatSkillImage(node)
+            setCombatSkillImage(node);
         }
     });
 
