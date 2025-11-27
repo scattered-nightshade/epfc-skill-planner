@@ -2,6 +2,7 @@
 
 const levelCap = 55;
 let skills = [];
+let combatSkills = [];
 const selectedSkills = new Set();
 const selectedCombatSkills = new Set();
 
