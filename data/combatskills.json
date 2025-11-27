@@ -1,0 +1,21 @@
+[
+    [
+        { "id": "ma_1", "name": "Mobile Attacker", "group": "ma", "mutual-exclusivity":[] },
+        { "id": "arp_1", "name": "Armour Proficiency", "group": "arp", "mutual-exclusivity":["arp"] },
+        { "id": "re_1", "name": "Reinforcement", "group": "re", "mutual-exclusivity":["re"] },
+        { "id": "hp_1", "name": "Handling Proficiency", "group": "hp", "mutual-exclusivity":[] }
+    ],
+    [
+        { "id": "ae_1", "name": "Ammo Economy", "group": "ae", "mutual-exclusivity":["scav"] },
+        { "id": "scav_1", "name": "Scavenger", "group": "scav", "mutual-exclusivity":["ae"] },
+        { "id": "ar_1", "name": "Ammo Reserves", "group": "ar", "mutual-exclusivity":[] }
+        
+    ],
+    [
+        { "id": "br_1", "name": "Blast Radius", "group": "br", "mutual-exclusivity":[] },
+        { "id": "vit_1", "name": "Vitality", "group": "vit", "mutual-exclusivity":[] }
+    ],
+    [
+        { "id": "vit_2", "name": "Vitality", "group": "vit", "mutual-exclusivity":[] }
+    ]
+]
