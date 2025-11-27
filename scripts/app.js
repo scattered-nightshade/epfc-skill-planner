@@ -167,6 +167,7 @@ function createGraph(skills) {
                         return `images/skills/${skill.data('group')}.png`;
                     },
                     'opacity': 0.35,
+                    'background-fit': 'cover'
                 },
             },
             {
@@ -174,7 +175,6 @@ function createGraph(skills) {
                 style: {
                     'width': '40',
                     'height': '40',
-                    'background-fit': 'cover'
                 }
             },
             {
@@ -182,7 +182,6 @@ function createGraph(skills) {
                 style: {
                     'width': '40',
                     'height': '40',
-                    'background-fit': 'cover'
                 }
             },
             { 
