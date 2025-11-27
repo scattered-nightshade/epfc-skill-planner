@@ -6,7 +6,7 @@
     { "id": "ae_1", "name": "Ammo Economy", "group": "ae", "tier": 1, "mutual-exclusivity": ["scav_1"], "x": 0, "y": 225 },
     { "id": "scav_1", "name": "Scavenger", "group": "scav", "tier": 1, "mutual-exclusivity": ["ae_1"], "x": 150, "y": 225 },
     { "id": "ar_1", "name": "Ammo Reserves", "group": "ar", "tier": 1, "mutual-exclusivity": [], "x": 300, "y": 225 },
-    { "id": "bs_1", "name": "Blast Radius", "group": "bs", "tier": 1, "mutual-exclusivity": [], "x": 450, "y": 225 },
+    { "id": "br_1", "name": "Blast Radius", "group": "br", "tier": 1, "mutual-exclusivity": [], "x": 450, "y": 225 },
     { "id": "ls_1", "name": "Lucky Shot", "group": "ls", "tier": 1, "mutual-exclusivity": [], "x": 600, "y":225 },
 
     { "id": "vit_1", "name": "Vitality", "group": "vit", "tier": 2, "mutual-exclusivity": ["ht_1"], "x": -525, "y": 75 },
