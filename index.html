@@ -2,15 +2,19 @@
 <html>
     
 <head>
-    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="/styles/styles.css">
+    <link rel="stylesheet" href="/styles/skills.css">
+    <link rel="stylesheet" href="/styles/combatSkills.css">
+    <link rel="stylesheet" href="/styles/inventory.css">
+    <link rel="stylesheet" href="/styles/help.css">
     <script src="https://unpkg.com/cytoscape@3.24.0/dist/cytoscape.min.js"></script>
 </head>
 
 <body>
     <main class="app-container">
         <div class="tabs">
-            <button onclick="switchTab('skillsContainer')" id="skillsTab">Skills</button>
-            <button onclick="switchTab('combatSkillsContainer')" id="combatTab">Combat Skills</button>
+            <button onclick="switchTab('skillsContainer'); centerGraph(skillsGraph)" id="skillsTab">Skills</button>
+            <button onclick="switchTab('combatSkillsContainer'); centerGraph(combatSkillsGraph)" id="combatTab">Combat Skills</button>
             <button onclick="switchTab('inventoryContainer')" id="inventoryTab">Inventory</button>
             <button onclick="switchTab('helpContainer')" id="helpTab">Help</button>
             <button onclick="restart()" id="reset">Reset</button>
@@ -19,7 +23,7 @@
             <div class="skill-web" id="skill-web"></div>
         </div>
         <div class="hidden tab-container combat-skills-container" id="combatSkillsContainer">
-            
+            <div class="combat-skills" id="combatSkills"></div>
         </div>
         <div class="hidden tab-container inventory-container" id="inventoryContainer">
             
@@ -32,12 +36,15 @@
         </div>
         <div class="skill-effects">
             <h1>Stats Overview</h1>
+            <h2>Skill points spent: <span id="pointsSpent">0</span></h2>
+            <h2>Combat points spent: <span id="combatPointsSpent">0</span></h2>
             <p>Health: <span id="health">100</span></p>
             <p>Stamina: <span id="stamina">100</span></p>
             <p>Stamina Regeneration Rate: <span id="staminaRegenRate">15</span>/s</p>
             <p>Stamina Consumption Rate: <span id="staminaConsumptionRate">N/a</span></p>
             <p>Speed: <span id="speed">N/a</span></p>
             <p>Weight: <span id="weight">N/a</span></p>
+            <br>
             <p>Dodge Chance: <span id="dodgeChance">0</span>%</p>
             <p>Crit Chance: <span id="critChance">0</span>%</p>
             <p>Reload Speed: <span id="reloadSpeed">100</span>%</p>
@@ -58,8 +65,8 @@
         </div>
     </main>
 
-    <script src="scripts/app.js"></script>
-    <script src="scripts/tabs.js"></script>
+    <script src="/scripts/app.js"></script>
+    <script src="/scripts/tabs.js"></script>
 </body>
 
 </html>

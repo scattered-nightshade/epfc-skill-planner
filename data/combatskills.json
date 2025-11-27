@@ -1,21 +1,67 @@
 [
-    [
-        { "id": "ma_1", "name": "Mobile Attacker", "group": "ma", "mutual-exclusivity":[] },
-        { "id": "arp_1", "name": "Armour Proficiency", "group": "arp", "mutual-exclusivity":["arp"] },
-        { "id": "re_1", "name": "Reinforcement", "group": "re", "mutual-exclusivity":["re"] },
-        { "id": "hp_1", "name": "Handling Proficiency", "group": "hp", "mutual-exclusivity":[] }
-    ],
-    [
-        { "id": "ae_1", "name": "Ammo Economy", "group": "ae", "mutual-exclusivity":["scav"] },
-        { "id": "scav_1", "name": "Scavenger", "group": "scav", "mutual-exclusivity":["ae"] },
-        { "id": "ar_1", "name": "Ammo Reserves", "group": "ar", "mutual-exclusivity":[] }
-        
-    ],
-    [
-        { "id": "br_1", "name": "Blast Radius", "group": "br", "mutual-exclusivity":[] },
-        { "id": "vit_1", "name": "Vitality", "group": "vit", "mutual-exclusivity":[] }
-    ],
-    [
-        { "id": "vit_2", "name": "Vitality", "group": "vit", "mutual-exclusivity":[] }
-    ]
+    { "id": "ma_1", "name": "Mobile Attacker", "group": "ma", "tier": 1, "mutual-exclusivity": [], "x": -600, "y": 225 },
+    { "id": "arp_1", "name": "Armour Proficiency", "group": "arp", "tier": 1, "mutual-exclusivity": ["re_1"], "x": -450, "y": 225 },
+    { "id": "re_1", "name": "Reinforcement", "group": "re", "tier": 1, "mutual-exclusivity": ["arp_1"], "x": -300, "y": 225 },
+    { "id": "hp_1", "name": "Handling Proficiency", "group": "hp", "tier": 1, "mutual-exclusivity": [], "x": -150, "y": 225 },
+    { "id": "ae_1", "name": "Ammo Economy", "group": "ae", "tier": 1, "mutual-exclusivity": ["scav_1"], "x": 0, "y": 225 },
+    { "id": "scav_1", "name": "Scavenger", "group": "scav", "tier": 1, "mutual-exclusivity": ["ae_1"], "x": 150, "y": 225 },
+    { "id": "ar_1", "name": "Ammo Reserves", "group": "ar", "tier": 1, "mutual-exclusivity": [], "x": 300, "y": 225 },
+    { "id": "bs_1", "name": "Blast Radius", "group": "bs", "tier": 1, "mutual-exclusivity": [], "x": 450, "y": 225 },
+    { "id": "ls_1", "name": "Lucky Shot", "group": "ls", "tier": 1, "mutual-exclusivity": [], "x": 600, "y":225 },
+
+    { "id": "vit_1", "name": "Vitality", "group": "vit", "tier": 2, "mutual-exclusivity": ["ht_1"], "x": -525, "y": 75 },
+    { "id": "ht_1", "name": "Hard Target", "group": "ht", "tier": 2, "mutual-exclusivity": ["vit_1"], "x": -375, "y": 75 },
+    { "id": "exe_1", "name": "Executioner", "group": "exe", "tier": 2, "mutual-exclusivity": ["vt_1"], "x": -225, "y": 75 },
+    { "id": "vt_1", "name": "Vital Targets", "group": "vt", "tier": 2, "mutual-exclusivity": ["exe_1"], "x": -75, "y": 75 },
+    { "id": "os_1", "name": "Ordnance Supply", "group": "os", "tier": 2, "mutual-exclusivity": ["rc_1"], "x": 75, "y": 75 },
+    { "id": "rc_1", "name": "Refined Composition", "group": "rc", "tier": 2, "mutual-exclusivity": ["os_1"], "x": 225, "y": 75 },
+    { "id": "fc_1", "name": "Fire Control", "group": "fc", "tier": 2, "mutual-exclusivity": [], "x": 375, "y": 75 },
+    { "id": "un_1", "name": "Undertaker", "group": "un", "tier": 2, "mutual-exclusivity": [], "x": 525, "y": 75 },
+
+    { "id": "vit_2", "name": "Vitality", "group": "vit", "tier": 3, "mutual-exclusivity": ["re_2"], "x": -450, "y": -75 },
+    { "id": "re_2", "name": "Reinforcement", "group": "re", "tier": 3, "mutual-exclusivity": ["vit_2"], "x": -300, "y": -75 },
+    { "id": "woc_1", "name": "Weapon of Choice", "group": "woc", "tier": 3, "mutual-exclusivity": ["fa_1"], "x": -150, "y": -75 },
+    { "id": "fa_1", "name": "Full Arsenal", "group": "fa", "tier": 3, "mutual-exclusivity": ["woc_1"], "x": 0, "y": -75 },
+    { "id": "gs_1", "name": "Gunsmith", "group": "gs", "tier": 3, "mutual-exclusivity": [], "x": 150, "y": -75 },
+    { "id": "reap_1", "name": "reaper", "group": "reap", "tier": 3, "mutual-exclusivity": [], "x": 300, "y": -75 },
+    { "id": "ar_2", "name": "Ammo Reserves", "group": "ar", "tier": 3, "mutual-exclusivity": [], "x": 450, "y": -75 },
+
+    { "id": "vt_2", "name": "Vital Targets", "group": "vt", "tier": 4, "mutual-exclusivity": [], "x": -375, "y": -225 },
+    { "id": "tc_1", "name": "Tactical Coordination", "group": "tc", "tier": 4, "mutual-exclusivity": [], "x": -225, "y": -225 },
+    { "id": "os_2", "name": "Ordnance Supply", "group": "os", "tier": 4, "mutual-exclusivity": [], "x": -75, "y": -225 },
+    { "id": "cdg_1", "name": "Coup de Grace", "group": "cdg", "tier": 4, "mutual-exclusivity": [], "x": 75, "y": -225 },
+    { "id": "vit_3", "name": "Vitality", "group": "vit", "tier": 4, "mutual-exclusivity": [], "x": 225, "y": -225 },
+    { "id": "cs_1", "name": "Critical Strike", "group": "cs", "tier": 4, "mutual-exclusivity": [], "x": 375, "y": -225 },
+
+
+    { "id": "ma_2", "name": "Mobile Attacker", "group": "ma", "tier": 5, "mutual-exclusivity": [], "x": -600, "y": 3450 },
+    { "id": "ma_3", "name": "Mobile Attacker", "group": "ma", "tier": 5, "mutual-exclusivity": [], "x": -450, "y": 3450 },
+    { "id": "ma_4", "name": "Mobile Attacker", "group": "ma", "tier": 5, "mutual-exclusivity": [], "x": -300, "y": 3450 },
+    { "id": "ma_5", "name": "Mobile Attacker", "group": "ma", "tier": 5, "mutual-exclusivity": [], "x": -150, "y": 3450 },
+    { "id": "ma_6", "name": "Mobile Attacker", "group": "ma", "tier": 5, "mutual-exclusivity": [], "x": 0, "y": 3450 },
+    { "id": "ma_7", "name": "Mobile Attacker", "group": "ma", "tier": 5, "mutual-exclusivity": [], "x": 150, "y": 3450 },
+    { "id": "ma_8", "name": "Mobile Attacker", "group": "ma", "tier": 5, "mutual-exclusivity": [], "x": 300, "y": 3450 },
+    { "id": "ma_9", "name": "Mobile Attacker", "group": "ma", "tier": 5, "mutual-exclusivity": [], "x": 450, "y": 3450 },
+    { "id": "ma_10", "name": "Mobile Attacker", "group": "ma", "tier": 5, "mutual-exclusivity": [], "x": 600, "y": 3450 },
+    { "id": "ma_11", "name": "Mobile Attacker", "group": "ma", "tier": 6, "mutual-exclusivity": [], "x": -525, "y": 3300 },
+    { "id": "ma_12", "name": "Mobile Attacker", "group": "ma", "tier": 6, "mutual-exclusivity": [], "x": -375, "y": 3300 },
+    { "id": "ma_13", "name": "Mobile Attacker", "group": "ma", "tier": 6, "mutual-exclusivity": [], "x": -225, "y": 3300 },
+    { "id": "ma_14", "name": "Mobile Attacker", "group": "ma", "tier": 6, "mutual-exclusivity": [], "x": -75, "y": 3300 },
+    { "id": "ma_15", "name": "Mobile Attacker", "group": "ma", "tier": 6, "mutual-exclusivity": [], "x": 75, "y": 3300 },
+    { "id": "ma_16", "name": "Mobile Attacker", "group": "ma", "tier": 6, "mutual-exclusivity": [], "x": 225, "y": 3300 },
+    { "id": "ma_17", "name": "Mobile Attacker", "group": "ma", "tier": 6, "mutual-exclusivity": [], "x": 375, "y": 3300 },
+    { "id": "ma_18", "name": "Mobile Attacker", "group": "ma", "tier": 6, "mutual-exclusivity": [], "x": 525, "y": 3300 },
+    { "id": "ma_19", "name": "Mobile Attacker", "group": "ma", "tier": 7, "mutual-exclusivity": [], "x": -450, "y": 3150 },
+    { "id": "ma_20", "name": "Mobile Attacker", "group": "ma", "tier": 7, "mutual-exclusivity": [], "x": -300, "y": 3150 },
+    { "id": "ma_21", "name": "Mobile Attacker", "group": "ma", "tier": 7, "mutual-exclusivity": [], "x": -150, "y": 3150 },
+    { "id": "ma_22", "name": "Mobile Attacker", "group": "ma", "tier": 7, "mutual-exclusivity": [], "x": 0, "y": 3150 },
+    { "id": "ma_23", "name": "Mobile Attacker", "group": "ma", "tier": 7, "mutual-exclusivity": [], "x": 150, "y": 3150 },
+    { "id": "ma_24", "name": "Mobile Attacker", "group": "ma", "tier": 7, "mutual-exclusivity": [], "x": 300, "y": 3150 },
+    { "id": "ma_25", "name": "Mobile Attacker", "group": "ma", "tier": 7, "mutual-exclusivity": [], "x": 450, "y": 3150 },
+    { "id": "ma_26", "name": "Mobile Attacker", "group": "ma", "tier": 8, "mutual-exclusivity": [], "x": -375, "y": 3000 },
+    { "id": "ma_27", "name": "Mobile Attacker", "group": "ma", "tier": 8, "mutual-exclusivity": [], "x": -225, "y": 3000 },
+    { "id": "ma_28", "name": "Mobile Attacker", "group": "ma", "tier": 8, "mutual-exclusivity": [], "x": -75, "y": 3000 },
+    { "id": "ma_29", "name": "Mobile Attacker", "group": "ma", "tier": 8, "mutual-exclusivity": [], "x": 75, "y": 3000 },
+    { "id": "ma_30", "name": "Mobile Attacker", "group": "ma", "tier": 8, "mutual-exclusivity": [], "x": 225, "y": 3000 },
+    { "id": "ma_31", "name": "Mobile Attacker", "group": "ma", "tier": 8, "mutual-exclusivity": [], "x": 375, "y": 3000 }
 ]

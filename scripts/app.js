@@ -3,16 +3,115 @@
 const levelCap = 55;
 let skills = [];
 const selectedSkills = new Set();
+const selectedCombatSkills = new Set();
 
-let cy;
+let skillsGraph;
+let combatSkillsGraph;
 let currentlyHoveredNode;
 
 async function loadSkills() {
-    const response = await fetch('data/skills.json');
-    skills = await response.json();
+    const skillsFile = await fetch('data/skills.json');
+    skills = await skillsFile.json();
+
+    const combatSkillsFile = await fetch('data/combatskills.json');
+    combatSkills = await combatSkillsFile.json();
+
     createGraph(skills);
+    createCombatGraph(combatSkills);
+
     loadSkillsFromURL();
 }
+
+function updateURL() {
+    const skillArray = Array.from(selectedSkills);
+    const combatArray = Array.from(selectedCombatSkills);
+
+    const encodedSkills = encodeURIComponent(skillArray.join(','));
+    const encodedCombatSkills = encodeURIComponent(combatArray.join(','));
+
+    const params = new URLSearchParams();
+
+    if (skillArray.length > 0) {
+        params.set('skills', encodedSkills);
+    }
+
+    if (combatArray.length > 0) {
+        params.set('combat', encodedCombatSkills);
+    }
+
+    const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, '', newUrl);
+}
+
+
+function loadSkillsFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const urlSkills = urlParams.get('skills');
+    if (urlSkills) {
+        const skillIds = decodeURIComponent(urlSkills).split(',');
+        skillIds.forEach(id => selectedSkills.add(id));
+    }
+
+    const urlCombatSkills = urlParams.get('combat');
+    if (urlCombatSkills) {
+        const combatIds = decodeURIComponent(urlCombatSkills).split(',');
+        combatIds.forEach(id => selectedCombatSkills.add(id));
+    }
+
+    skillsGraph.nodes().forEach(node => {
+        if (selectedSkills.has(node.id())) {
+            setSkillOpacity(node, true);
+        }
+    });
+
+    combatSkillsGraph.nodes().forEach(node => {
+        if (selectedCombatSkills.has(node.id())) {
+            setSkillOpacity(node, true)
+        }
+    });
+
+    updateSkillLines();
+    updateSkillEffects();
+}
+
+/*
+This is needed because of how the website is setup, the initial tab loads just fine. 
+But if you try to look at any other skill trees the graph loads at the origin which is at 0,0 but 0,0 is at the top left of the div that the graph is in
+This happens because how how the tabs are setup with flexbox as well as them just being hidden on load
+*/
+
+function centerGraph(graph) {
+    const container = graph.container();
+    graph.pan({ x: container.clientWidth / 2, y: container.clientHeight / 2 });
+}
+
+function restart() {
+    selectedSkills.clear();
+    selectedCombatSkills.clear();
+
+    skillsGraph.nodes().forEach(node => {
+        setSkillOpacity(node, false);
+    });
+
+    skillsGraph.edges().forEach(edge => {
+        edge.style('line-color', '#888888');
+    });
+
+    combatSkillsGraph.nodes().forEach(node => {
+        setSkillOpacity(node, false);
+    });
+
+    updateSkillEffects();
+    updateURL();
+}
+
+
+
+
+
+
+// Skills
 
 function createGraph(skills) {
     const elements = [];
@@ -55,7 +154,7 @@ function createGraph(skills) {
         });
     });
 
-    cy = cytoscape({
+    skillsGraph = cytoscape({
         container: document.getElementById('skill-web'),
         elements: elements,
         style: [
@@ -100,13 +199,17 @@ function createGraph(skills) {
         maxZoom: 5
     });
 
+    skillsGraph.ready(() => {
+        centerGraph(skillsGraph);
+    });
 
-    addNodeClickHandler();
+    addSkillsNodeClickHandler();
     addHoverHighlight();
 }
 
-function addNodeClickHandler() {
-    cy.on('tapstart', 'node', (event) => {
+
+function addSkillsNodeClickHandler() {
+    skillsGraph.on('tapstart', 'node', (event) => {
         const node = event.target;
         const skillId = node.id();
         const skill = skills.find(_skill => _skill.id == skillId);
@@ -138,12 +241,12 @@ function addNodeClickHandler() {
 
 function addHoverHighlight() {
 
-    cy.on('mouseover', 'node', (event) => {
+    skillsGraph.on('mouseover', 'node', (event) => {
         currentlyHoveredNode = event.target;
         refreshHighlight();
     });
 
-    cy.on('mouseout', 'node', (event) => {
+    skillsGraph.on('mouseout', 'node', (event) => {
         currentlyHoveredNode = null;
         clearHighlight();
     });
@@ -168,7 +271,7 @@ function addHoverHighlight() {
 
         const group = currentlyHoveredNode.data('group');
 
-        cy.nodes().forEach(node => {
+        skillsGraph.nodes().forEach(node => {
             if (node.data('group') == group) {
                 node.style('border-width', '70px');
                 node.style('border-color', '#00eeff');
@@ -180,7 +283,7 @@ function addHoverHighlight() {
     }
 
     function clearHighlight() {
-        cy.nodes().forEach(node => {
+        skillsGraph.nodes().forEach(node => {
             node.style('border-width', 0);
         });
     }
@@ -189,8 +292,6 @@ function addHoverHighlight() {
         return window.event && window.event.shiftKey;
     }
 }
-
-
 
 function setSkillOpacity(node, enabled = false) {
     if (enabled) {
@@ -215,7 +316,7 @@ function canDeselect(skill) {
 }
 
 function updateSkillLines() {
-    cy.edges().forEach(edge => {
+    skillsGraph.edges().forEach(edge => {
         const preexistingSkill = selectedSkills.has(edge.source().id());
         const newSkill = selectedSkills.has(edge.target().id());
 
@@ -228,41 +329,161 @@ function updateSkillLines() {
     });
 }
 
-function updateURL() {
-    const skillArray = Array.from(selectedSkills);
-    const encoded = encodeURIComponent(skillArray.join(','));
-    const newUrl = `${window.location.origin}${window.location.pathname}?skills=${encoded}`;
+function calculateSkillPoints() {
+    let total = 0;
 
-    window.history.replaceState(null, '', newUrl);
+    console.log(selectedSkills);
+
+    const mappedSelectedSkills = Array.from(selectedSkills).map(id => 
+        skills.find(s => s.id === id)
+    );
+
+    // Count cores
+    const coreSkills = mappedSelectedSkills.filter(s => s.core_skill);
+
+    total += (coreSkills.length - 1) * 2;
+
+    // Major
+    total += mappedSelectedSkills.filter(_skill => {
+        return _skill.major_skill && !_skill.core_skill;
+    }).length * 2;
+
+    // Minor
+    total += mappedSelectedSkills.filter(_skill => {
+        return !_skill.major_skill && !_skill.core_skill;
+    }).length;
+
+    return total;
 }
 
-function loadSkillsFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlSkills = urlParams.get('skills');
 
-    if (!urlSkills) {
-        return
-    }
 
-    const skillIds = decodeURIComponent(urlSkills).split(',');
-    skillIds.forEach(skillId => selectedSkills.add(skillId));
 
-    cy.nodes().forEach(node => {
-        if (selectedSkills.has(node.id())) {
-            setSkillOpacity(node, true);
-        }
+
+// Combat Skills
+
+function createCombatGraph(combatSkills) {
+    const elements = [];
+
+    combatSkills.forEach(combatSkill => {
+        elements.push({
+            data: { 
+                id: combatSkill.id, 
+                label: combatSkill.name,
+                group: combatSkill.group
+            },
+            position: {
+                x: combatSkill.x,
+                y: combatSkill.y
+            },
+            locked: true,
+            grabbable: false,
+        });
+
+        combatSkill["mutual-exclusivity"].forEach(connection => {
+            elements.push({
+                data: { 
+                    source: combatSkill.id, 
+                    target: connection.trim()
+                }
+            });
+        });
     });
 
-    updateSkillLines();
-    updateSkillEffects();
+    console.log(elements);
+
+    combatSkillsGraph = cytoscape({
+        container: document.getElementById('combatSkills'),
+        elements: elements,
+        style: [
+            { 
+                selector: 'node', 
+                style: { 
+                    'overlay-padding': '0px',
+                    'background-opacity': 0,
+                    'background-image': function(combatSkill) {
+                        return `images/combatSkills/${combatSkill.data('group')}.png`;
+                    },
+                    'opacity': 0.35,
+                    'width': '110',
+                    'height': '110',
+                    'background-fit': 'cover'
+                },
+            },
+            { 
+                selector: 'edge', 
+                style: { 
+                    'width': 12, 
+                    'line-color': '#888888' 
+                } 
+            }
+        ],
+        layout: { name: 'preset' },
+        wheelSensitivity: 0.1,
+        minZoom: 1,
+        maxZoom: 3
+    });
+
+    skillsGraph.ready(() => {
+        centerGraph(combatSkillsGraph);
+    });
+
+    addCombatSkillsNodeClickHandler();
 }
 
+function addCombatSkillsNodeClickHandler() {
+    combatSkillsGraph.on('tapstart', 'node', (event) => {
+        const node = event.target;
+        const combatSkillId = node.id();
+        const combatSkill = combatSkills.find(_skill => _skill.id == combatSkillId);
+
+        const conflictingSkills = combatSkill["mutual-exclusivity"] || [];
+
+        conflictingSkills.forEach(conflictId => {
+            if (selectedCombatSkills.has(conflictId)) {
+                selectedCombatSkills.delete(conflictId);
+
+                const conflictingSkill = combatSkillsGraph.getElementById(conflictId);
+                if (conflictingSkill) {
+                    setSkillOpacity(conflictingSkill, false);
+                }
+            }
+        });
+
+        if (selectedCombatSkills.has(combatSkillId)) {
+            selectedCombatSkills.delete(combatSkillId);
+            setSkillOpacity(node, false);
+        } 
+        else {
+            selectedCombatSkills.add(combatSkillId);
+            setSkillOpacity(node, true);
+        }
+
+        updateSkillEffects();
+        updateURL();
+    });
+}
+
+function caclulateCombatSkillPoints() {
+    let total = 0;
+
+    total = selectedCombatSkills.size;
+
+    return total;
+}
+
+
+
+
+
+//The actual important stuff
 
 function updateSkillEffects() {
     
     let weight = 0;
 
     let agility = 0;
+    let bruteStrength = 0;
     
     let conMaxStamina = 0;
     let conStamRegen = 0;
@@ -279,6 +500,23 @@ function updateSkillEffects() {
     let ciHackResourceCost = 0;
     let teTechItems = 0;
     let sdCameraDetection = 0;
+
+    let reDamageReduction = 0;
+    let hpReloadSpeed = 0;
+    let hpFasterAiming = 0;
+    let scavCombatItemRechargeTime = 0;
+    let arExtraAmmo = 0;
+    let lsCritChance = 0;
+    let vitMaxHealth = 0;
+    let htCrouchedDodgeChance = 0;
+    let exeDamageIncrease = 0;
+    let vtDamageIncrease = 0;
+    let wocExtraAmmo = 0;
+    let wocReloadSpeed = 0;
+    let tcDamageBoost = 0;
+    let cdgDamageBoost = 0;
+    let csCritDamage = 0;
+
 
     const coreSkillsSelected = [];
 
@@ -333,14 +571,131 @@ function updateSkillEffects() {
             case "agil":
                 agility += 1;
                 break;
+            case "bs":
+                bruteStrength += 1;
+                break;
         }
     });
 
+    selectedCombatSkills.forEach(id => {
+        const combatSkill = combatSkills.find(_skill => _skill.id == id);
+
+        if (!combatSkill) {
+            return;
+        };
+
+        switch (combatSkill.group) {
+            case "ma":
+                break;
+            case "arp":
+                break;
+            case "re":
+                reDamageReduction += 20;
+                break;
+            case "hp":
+                hpReloadSpeed += 20;
+                hpFasterAiming += 20;
+                break;
+            case "ae":
+                break;
+            case "scav":
+                scavCombatItemRechargeTime += 25;
+                break;
+            case "ar":
+                arExtraAmmo += 25;
+                break;
+            case "br":
+                break;
+            case "ls":
+                lsCritChance += 10;
+                break;
+            case "vit":
+                vitMaxHealth += 20;
+                break;
+            case "ht":
+                htCrouchedDodgeChance += 20;
+                break;
+            case "exe":
+                exeDamageIncrease += 25;
+                break;
+            case "vt":
+                vtDamageIncrease += 15;
+                break;
+            case "os":
+                break;
+            case "rc":
+                break;
+            case "fc":
+                break;
+            case "un":
+                break;
+            case "woc":
+                wocExtraAmmo += 50;
+                wocReloadSpeed += 20;
+                break;
+            case "fa":
+                break;
+            case "gs":
+                break;
+            case "reap":
+                break;
+            case "tc":
+                tcDamageBoost += 20;
+                break;
+            case "cdg":
+                cdgDamageBoost += 50;
+                break;
+            case "cs":
+                csCritDamage += 100;
+                break;
+        }
+    });
+
+    const skillPointsSpent = calculateSkillPoints();
+    const skillPointsSpentElement = document.getElementById("pointsSpent");
+    if (skillPointsSpent > levelCap) {
+        skillPointsSpentElement.classList.add('over-limit');
+        skillPointsSpentElement.classList.remove('at-limit');
+    }
+    else if (skillPointsSpent == levelCap) {
+        skillPointsSpentElement.classList.add('at-limit');
+        skillPointsSpentElement.classList.remove('over-limit');
+    }
+    else {
+        skillPointsSpentElement.classList.remove('at-limit');
+        skillPointsSpentElement.classList.remove('over-limit');
+    }
+    
+    skillPointsSpentElement.innerText = skillPointsSpent;
+
+
+    const combatSkillPointsSpent = caclulateCombatSkillPoints();
+    const combatSkillPointsSpentElement = document.getElementById("combatPointsSpent");
+    const combatSkillsCap = Math.floor(levelCap / 7)
+
+    console.log(combatSkillsCap)
+
+    if (combatSkillPointsSpent > combatSkillsCap) {
+        combatSkillPointsSpentElement.classList.add('over-limit');
+        combatSkillPointsSpentElement.classList.remove('at-limit');
+    }
+    else if (combatSkillPointsSpent == combatSkillsCap) {
+        combatSkillPointsSpentElement.classList.add('at-limit');
+        combatSkillPointsSpentElement.classList.remove('over-limit');
+    }
+    else {
+        combatSkillPointsSpentElement.classList.remove('at-limit');
+        combatSkillPointsSpentElement.classList.remove('over-limit');
+    }
+
+    combatSkillPointsSpentElement.innerText = combatSkillPointsSpent;
+
+    document.getElementById('health').innerText = (100 + vitMaxHealth).toString();
     document.getElementById('stamina').innerText = (100 + conMaxStamina).toString();
     document.getElementById('staminaRegenRate').innerText = (15 * (1.0 + conStamRegen) * (agility >= 2 ? 1.5 : 1)).toString();
-    document.getElementById('dodgeChance').innerText = lpDodgeRate.toString(); // Need to consider weight at some point: Each point of weight beyond 12 reduces your dodge change by a multiplicative ~2.08%.
-    document.getElementById('critChance').innerText = ciCritRate.toString();
-    document.getElementById('reloadSpeed').innerText = (100 + fhReloadSpeed).toString();
+    document.getElementById('dodgeChance').innerText = (lpDodgeRate + htCrouchedDodgeChance).toString(); // Need to consider weight at some point: Each point of weight beyond 12 reduces your dodge change by a multiplicative ~2.08%.
+    document.getElementById('critChance').innerText = (ciCritRate + lsCritChance).toString();
+    document.getElementById('reloadSpeed').innerText = (100 + fhReloadSpeed + wocReloadSpeed + hpReloadSpeed).toString();
     document.getElementById('appliedForceSpeed').innerText = (100 + afDrillSpeed).toString();
     document.getElementById('lockpickingSpeed').innerText = (100 + fhLockpickSpeed).toString();
     document.getElementById('hackingSpeed').innerText = (100 + eaHackSpeed).toString();
@@ -358,19 +713,5 @@ function updateSkillEffects() {
     //document.getElementById('coreSkillWarning').innerText = coreSkillMessage;
 }
 
-function restart() {
-    selectedSkills.clear();
-
-    cy.nodes().forEach(node => {
-        setSkillOpacity(node, false);
-    });
-
-    cy.edges().forEach(edge => {
-        edge.style('line-color', '#888888');
-    });
-
-    updateSkillEffects();
-    updateURL();
-}
 
 loadSkills();
