@@ -339,7 +339,9 @@ function calculateSkillPoints() {
     // Count cores
     const coreSkills = mappedSelectedSkills.filter(s => s.core_skill);
 
-    total += (coreSkills.length - 1) * 2;
+    if (coreSkills.length > 0) {
+        total += (coreSkills.length - 1) * 2;
+    }
 
     // Major
     total += mappedSelectedSkills.filter(_skill => {
