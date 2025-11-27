@@ -62,13 +62,13 @@ function loadSkillsFromURL() {
 
     skillsGraph.nodes().forEach(node => {
         if (selectedSkills.has(node.id())) {
-            setSkillOpacity(node, true);
+            setSkillImage(node);
         }
     });
 
     combatSkillsGraph.nodes().forEach(node => {
         if (selectedCombatSkills.has(node.id())) {
-            setSkillOpacity(node, true)
+            setCombatSkillImage(node)
         }
     });
 
@@ -398,9 +398,8 @@ function createCombatGraph(combatSkills) {
                     'overlay-padding': '0px',
                     'background-opacity': 0,
                     'background-image': function(combatSkill) {
-                        return `images/combatSkills/${combatSkill.data('group')}.png`;
+                        return `images/combatSkills/${combatSkill.data('group')}-grey.png`;
                     },
-                    'opacity': 0.35,
                     'width': '110',
                     'height': '110',
                     'background-fit': 'cover'
@@ -441,18 +440,18 @@ function addCombatSkillsNodeClickHandler() {
 
                 const conflictingSkill = combatSkillsGraph.getElementById(conflictId);
                 if (conflictingSkill) {
-                    setSkillImage(conflictingSkill);
+                    setCombatSkillImage(conflictingSkill);
                 }
             }
         });
 
         if (selectedCombatSkills.has(combatSkillId)) {
             selectedCombatSkills.delete(combatSkillId);
-            setSkillImage(node, false);
+            setCombatSkillImage(node);
         } 
         else {
             selectedCombatSkills.add(combatSkillId);
-            setSkillImage(node);
+            setCombatSkillImage(node);
         }
 
         updateSkillEffects();
@@ -468,7 +467,16 @@ function caclulateCombatSkillPoints() {
     return total;
 }
 
+function setCombatSkillImage(node) {
+    const group = node.data('group');
 
+    if (selectedCombatSkills.has(node.id())) {
+        node.style('background-image', `images/combatSkills/${group}.png`);
+    } 
+    else {
+        node.style('background-image', `images/combatSkills/${group}-grey.png`);
+    }
+}
 
 
 
