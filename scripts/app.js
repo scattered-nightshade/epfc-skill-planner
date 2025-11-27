@@ -33,7 +33,7 @@ function updateURL() {
     const params = new URLSearchParams();
 
     if (skillArray.length > 0) {
-        params.set('skills', encodedSkills);
+        params.set('skills', encodedSkills);    
     }
 
     if (combatArray.length > 0) {
@@ -92,7 +92,7 @@ function restart() {
     selectedCombatSkills.clear();
 
     skillsGraph.nodes().forEach(node => {
-        setSkillOpacity(node, false);
+        setSkillImage(node);
     });
 
     skillsGraph.edges().forEach(edge => {
@@ -100,7 +100,7 @@ function restart() {
     });
 
     combatSkillsGraph.nodes().forEach(node => {
-        setSkillOpacity(node, false);
+        setSkillImage(node);
     });
 
     updateSkillEffects();
@@ -165,9 +165,8 @@ function createGraph(skills) {
                     'overlay-padding': '0px',
                     'background-opacity': 0,
                     'background-image': function(skill) {
-                        return `images/skills/${skill.data('group')}.png`;
+                        return `images/skills/${skill.data('group')}-grey.png`;
                     },
-                    'opacity': 0.35,
                     'background-fit': 'cover'
                 },
             },
@@ -217,7 +216,7 @@ function addSkillsNodeClickHandler() {
         if (selectedSkills.has(skillId)) {
             if (canDeselect()) {
                 selectedSkills.delete(skillId);
-                setSkillOpacity(node, false);
+                setSkillImage(node);
             }
             else {
                 return;
@@ -226,7 +225,7 @@ function addSkillsNodeClickHandler() {
         else {
             if (isSkillConnected(skill)){
                 selectedSkills.add(skillId);
-                setSkillOpacity(node, true);
+                setSkillImage(node);
             }
             else {
                 return;
@@ -273,18 +272,17 @@ function addHoverHighlight() {
 
         skillsGraph.nodes().forEach(node => {
             if (node.data('group') == group) {
-                node.style('border-width', '70px');
-                node.style('border-color', '#00eeff');
+                node.style('background-image', `images/skills/${group}-yellow.png`);
             }
             else {
-                node.style('border-width', 0);
+                setSkillImage(node);
             }
         });
     }
 
     function clearHighlight() {
         skillsGraph.nodes().forEach(node => {
-            node.style('border-width', 0);
+            setSkillImage(node);
         });
     }
 
@@ -293,12 +291,14 @@ function addHoverHighlight() {
     }
 }
 
-function setSkillOpacity(node, enabled = false) {
-    if (enabled) {
-        node.style('opacity', 1);
-    }
+function setSkillImage(node) {
+    const group = node.data('group');
+
+    if (selectedSkills.has(node.id())) {
+        node.style('background-image', `images/skills/${group}.png`);
+    } 
     else {
-        node.style('opacity', 0.35);
+        node.style('background-image', `images/skills/${group}-grey.png`);
     }
 }
 
@@ -331,8 +331,6 @@ function updateSkillLines() {
 
 function calculateSkillPoints() {
     let total = 0;
-
-    console.log(selectedSkills);
 
     const mappedSelectedSkills = Array.from(selectedSkills).map(id => 
         skills.find(s => s.id === id)
@@ -390,8 +388,6 @@ function createCombatGraph(combatSkills) {
         });
     });
 
-    console.log(elements);
-
     combatSkillsGraph = cytoscape({
         container: document.getElementById('combatSkills'),
         elements: elements,
@@ -445,18 +441,18 @@ function addCombatSkillsNodeClickHandler() {
 
                 const conflictingSkill = combatSkillsGraph.getElementById(conflictId);
                 if (conflictingSkill) {
-                    setSkillOpacity(conflictingSkill, false);
+                    setSkillImage(conflictingSkill);
                 }
             }
         });
 
         if (selectedCombatSkills.has(combatSkillId)) {
             selectedCombatSkills.delete(combatSkillId);
-            setSkillOpacity(node, false);
+            setSkillImage(node, false);
         } 
         else {
             selectedCombatSkills.add(combatSkillId);
-            setSkillOpacity(node, true);
+            setSkillImage(node);
         }
 
         updateSkillEffects();
@@ -672,8 +668,6 @@ function updateSkillEffects() {
     const combatSkillPointsSpent = caclulateCombatSkillPoints();
     const combatSkillPointsSpentElement = document.getElementById("combatPointsSpent");
     const combatSkillsCap = Math.floor(levelCap / 7)
-
-    console.log(combatSkillsCap)
 
     if (combatSkillPointsSpent > combatSkillsCap) {
         combatSkillPointsSpentElement.classList.add('over-limit');

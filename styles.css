@@ -27,7 +27,7 @@ p {
     height: 110%;
     background: url('/images/auction.png');
     background-size: cover;
-    filter: blur(10px);
+    filter: blur(15px);
     z-index: 0;
 }
 
