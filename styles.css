@@ -56,6 +56,22 @@ p {
     align-items: center;
 }
 
+.tab-button {
+    background-color: #141414;
+    color: white;
+    border-style: solid;
+    border-color: #0e0e0e;
+    filter: invert(0);
+    border-radius: 6px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
+.tab-button:hover {
+    filter: invert(1);
+}
+
 .tab-container {
     flex: 15;
 }

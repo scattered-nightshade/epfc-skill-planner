@@ -17,11 +17,11 @@
 <body>
     <main class="app-container">
         <div class="tabs">
-            <button onclick="switchTab('skillsContainer'); centerGraph(skillsGraph)" id="skillsTab">Skills</button>
-            <button onclick="switchTab('combatSkillsContainer'); centerGraph(combatSkillsGraph)" id="combatTab">Combat Skills</button>
-            <button onclick="switchTab('inventoryContainer')" id="inventoryTab">Inventory</button>
-            <button onclick="switchTab('helpContainer')" id="helpTab">Help</button>
-            <button onclick="restart()" id="reset">Reset</button>
+            <button class="tab-button" onclick="switchTab('skillsContainer'); centerGraph(skillsGraph)" id="skillsTab"><img src="images/skills.png" alt="Skills" width="100"></button>
+            <button class="tab-button" onclick="switchTab('combatSkillsContainer'); centerGraph(combatSkillsGraph)" id="combatTab"><img src="images/combatSkills.png" alt="Combat Skills" width="100"></button>
+            <button class="tab-button" onclick="switchTab('inventoryContainer')" id="inventoryTab"><img src="images/inventory.png" alt="Inventory" width="100"></button>
+            <button class="tab-button" onclick="switchTab('helpContainer')" id="helpTab"><img src="images/other.png" alt="Help" width="100"></button>
+            <button class="tab-button" onclick="restart()" id="reset"><img src="images/restart.png" alt="Reset" width="100"></button>
         </div>
         <div class="tab-container skills-container" id="skillsContainer">
             <div class="skill-web" id="skill-web"></div>

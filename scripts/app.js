@@ -130,7 +130,7 @@ function restart() {
     });
 
     combatSkillsGraph.nodes().forEach(node => {
-        setSkillImage(node);
+        setCombatSkillImage(node);
     });
 
     updateSkillEffects();
