@@ -94,11 +94,11 @@ function loadSkillsFromURL() {
     decodeBitflags(urlParams.get('combat'), selectedCombatSkills, highestIdInList(combatSkills));
 
     skillsGraph.nodes().forEach(node => {
-        setSkillImage(node)
+        setSkillImage(node);
     });
     
     combatSkillsGraph.nodes().forEach(node => {
-        setCombatSkillImage(node)
+        setCombatSkillImage(node);
     });
 
     updateSkillLines();
@@ -140,6 +140,84 @@ function restart() {
 
 
 
+function calculateClassFromSkillList() {
+    let count = [0, 0, 0, 0, 0];
+
+    const classNameById = {
+        "-1": "Freelancer",
+        "1": "Burglar",
+        "2": "Hacker",
+        "3": "Tech",
+        "4": "Mercenary",
+        "5": "ConArtist",
+        "12": "Ghost",
+        "13": "Sabouteur",
+        "14": "Commando",
+        "15": "Thief",
+        "23": "Specialist",
+        "24": "Breacher",
+        "25": "Infiltrator",
+        "34": "Engineer",
+        "35": "Spy",
+        "45": "Assassin"
+    };
+
+    console.log(selectedSkills);
+
+    selectedSkills.forEach(skillId => {
+        const selectedSkill = skills.find(_skill => _skill.id == skillId);
+
+        if (!selectedSkill || !selectedSkill.playerClass) {
+            return;
+        }
+
+        selectedSkill.playerClass.forEach(classId => {
+            count[classId]++;                
+        });
+    });
+
+    let highestCount = 0;
+    let highestClass = -1;
+
+    for (let i = 0; i < 5; i++) {
+        if (count[i] > highestCount){
+            highestCount = count[i];
+            highestClass = i;
+        }
+    }
+
+    if (highestClass == -1) {
+        return classNameById[-1];
+    }
+
+    let threshold = 0.35;
+    let nextHighest = 0;
+
+    for (let i = 0; i < 5; i++) {
+        if (i == highestClass) {
+            continue;
+        }
+        const ratio = count[i] / highestCount;
+        if (ratio > threshold) {
+            threshold = ratio;
+            nextHighest = i + 1;
+        }
+    }
+
+    highestClass += 1;
+    if (nextHighest != 0) {
+        if (nextHighest > highestClass) {
+            highestClass = highestClass * 10 + nextHighest;
+        }
+        else {
+            highestClass = nextHighest * 10 + highestClass;
+        }
+    }
+
+    return classNameById[highestClass];
+}
+
+
 
 
 // Skills
@@ -172,7 +250,7 @@ function createGraph(skills) {
             },
             locked: true,
             grabbable: false,
-            classes: skillType
+            classes: skillType //+ " " + (skill.playerClass || []).map(classId => `class-${classId}`).join(" "),
         });
 
         skill.connections.forEach(connection => {
@@ -192,6 +270,7 @@ function createGraph(skills) {
             { 
                 selector: 'node', 
                 style: { 
+                    //'label': 'data(id)',
                     'overlay-padding': '0px',
                     'background-opacity': 0,
                     'background-image': function(skill) {
@@ -200,6 +279,18 @@ function createGraph(skills) {
                     'background-fit': 'cover'
                 },
             },
+
+            //{ selector: '.class-0', style: { 'border-color': '#ff5555', 'border-width': 2 } },
+            //{ selector: '.class-1', style: { 'border-color': '#55aaff', 'border-width': 2 } },
+            //{ selector: '.class-2', style: { 'border-color': '#55ff55', 'border-width': 2 } },
+            //{ selector: '.class-3', style: { 'border-color': '#ffaa00', 'border-width': 2 } },
+            //{ selector: '.class-4', style: { 'border-color': '#aa55ff', 'border-width': 2 } },
+            //{ selector: '.class-0.class-1', style: { 'border-color': '#ff00ff', 'border-width': 6 } },
+            //{ selector: '.class-1.class-2', style: { 'border-color': '#00ffff', 'border-width': 6 } },
+            //{ selector: '.class-2.class-3', style: { 'border-color': '#aaff00', 'border-width': 6 } },
+            //{ selector: '.class-3.class-4', style: { 'border-color': '#ffaaee', 'border-width': 6 } },
+            //{ selector: '.class-0.class-4', style: { 'border-color': '#ff99ff', 'border-width': 6 } },
+
             {
                 selector: '.core',
                 style: {
@@ -724,6 +815,7 @@ function updateSkillEffects() {
 
     combatSkillPointsSpentElement.innerText = combatSkillPointsSpent;
 
+    document.getElementById('class').innerText = calculateClassFromSkillList();
     document.getElementById('health').innerText = (100 + vitMaxHealth).toString();
     document.getElementById('stamina').innerText = (100 + conMaxStamina).toString();
     document.getElementById('staminaRegenRate').innerText = (15 * (1.0 + conStamRegen) * (agility >= 2 ? 1.5 : 1)).toString();
