@@ -35,24 +35,41 @@ function encodeBitflags(selectedSet) {
         }
     });
 
-    return bitflag.toString(36);
+    return bitflag.toString();
 }
 
-function decodeBitflags(bitflags, skill) {
+function decodeBitflags(bitflags, skill, maxId = null) {
     if (!bitflags) {
         return;
     }
+    
+    if (!maxId) {
+        return;
+    }
 
-    let bitflag = BigInt(`0x${parseInt(bitflags, 36).toString(16)}`);
+    let bitflag;
+    try {
+        bitflag = BigInt(bitflags);
+    } 
+    catch (error) {
+        return;
+    }
 
-    let index = 0;
-    while (bitflag > 0n) {
-        if (bitflag & 1n) {
+    for (let index = 0; index <= maxId; index++) {
+        if ((bitflag & (1n << BigInt(index))) !== 0n) {
             skill.add(index.toString());
         }
-        bitflag >>= 1n;
-        index++;
     }
+    
+}
+
+function highestIdInList(list) {
+    let max = -1;
+    list.forEach(item => {
+        const n = Number(item.id);
+        if (!Number.isNaN(n) && n > max) max = n;
+    });
+    return max;
 }
 
 function updateURL() {
@@ -73,24 +90,21 @@ function updateURL() {
 function loadSkillsFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
 
-    decodeBitflags(urlParams.get('skills'), selectedSkills);
-    decodeBitflags(urlParams.get('combat'), selectedCombatSkills);
+    decodeBitflags(urlParams.get('skills'), selectedSkills, highestIdInList(skills));
+    decodeBitflags(urlParams.get('combat'), selectedCombatSkills, highestIdInList(combatSkills));
 
     skillsGraph.nodes().forEach(node => {
-        if (selectedSkills.has(node.id())) {
-            setSkillImage(node);
-        }
+        setSkillImage(node)
     });
-
+    
     combatSkillsGraph.nodes().forEach(node => {
-        if (selectedCombatSkills.has(node.id())) {
-            setCombatSkillImage(node);
-        }
+        setCombatSkillImage(node)
     });
 
     updateSkillLines();
     updateSkillEffects();
 }
+
 
 /*
 This is needed because of how the website is setup, the initial tab loads just fine. 
