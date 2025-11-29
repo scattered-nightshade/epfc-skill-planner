@@ -14,6 +14,12 @@ async function loadSkills() {
     const skillsFile = await fetch('data/skills.json');
     skills = await skillsFile.json();
 
+    skills.forEach(skill => {
+        const skillClasses = calculateCalssFromPosition(skill.x, skill.y);
+
+        skill.playerClass = skillClasses;
+    });
+
     const combatSkillsFile = await fetch('data/combatskills.json');
     combatSkills = await combatSkillsFile.json();
 
@@ -141,7 +147,7 @@ function restart() {
 
 
 function calculateClassFromSkillList() {
-    let count = [0, 0, 0, 0, 0];
+    let count = [0, 0, 0, 0, 0]; //Burgular, Hacker, Tech, Merc, Con Artist
 
     const classNameById = {
         "-1": "Freelancer",
@@ -217,7 +223,20 @@ function calculateClassFromSkillList() {
     return classNameById[highestClass];
 }
 
+function calculateCalssFromPosition(x, y) {
+    const precise = ((Math.atan2(x, y)/ Math.PI) * 2.5 + 5.5) % 5;
+    const floored = Math.floor(precise);
+    const diff = precise - floored;
+    const area = [ floored ];
+    if (diff <= 0.15) {
+        area.push(floored == 0 ? 4 : floored - 1);
+    }
+    else if (diff >= 0.85) {
+        area.push(floored == 4 ? 0 : floored + 1);
+    }
 
+    return area;
+}
 
 
 // Skills
@@ -280,16 +299,18 @@ function createGraph(skills) {
                 },
             },
 
-            //{ selector: '.class-0', style: { 'border-color': '#ff5555', 'border-width': 2 } },
-            //{ selector: '.class-1', style: { 'border-color': '#55aaff', 'border-width': 2 } },
-            //{ selector: '.class-2', style: { 'border-color': '#55ff55', 'border-width': 2 } },
-            //{ selector: '.class-3', style: { 'border-color': '#ffaa00', 'border-width': 2 } },
-            //{ selector: '.class-4', style: { 'border-color': '#aa55ff', 'border-width': 2 } },
-            //{ selector: '.class-0.class-1', style: { 'border-color': '#ff00ff', 'border-width': 6 } },
+            
+            //{ selector: '.class-0', style: { 'border-color': '#ff0000', 'border-width': 3 } },
+            //{ selector: '.class-1', style: { 'border-color': '#00ff00', 'border-width': 3 } },
+            //{ selector: '.class-2', style: { 'border-color': '#0000ff', 'border-width': 3 } },
+            //{ selector: '.class-3', style: { 'border-color': '#ff8800', 'border-width': 3 } },
+            //{ selector: '.class-4', style: { 'border-color': '#ff0088', 'border-width': 3 } },
+            //{ selector: '.class-0.class-1', style: { 'border-color': '#ffff00', 'border-width': 6 } },
             //{ selector: '.class-1.class-2', style: { 'border-color': '#00ffff', 'border-width': 6 } },
-            //{ selector: '.class-2.class-3', style: { 'border-color': '#aaff00', 'border-width': 6 } },
-            //{ selector: '.class-3.class-4', style: { 'border-color': '#ffaaee', 'border-width': 6 } },
-            //{ selector: '.class-0.class-4', style: { 'border-color': '#ff99ff', 'border-width': 6 } },
+            //{ selector: '.class-2.class-3', style: { 'border-color': '#ff00ff', 'border-width': 6 } },
+            //{ selector: '.class-3.class-4', style: { 'border-color': '#ff8888', 'border-width': 6 } },
+            //{ selector: '.class-0.class-4', style: { 'border-color': '#000000', 'border-width': 6 } },
+            
 
             {
                 selector: '.core',
