@@ -17,27 +17,78 @@
 <body>
     <main class="app-container">
         <div class="tabs">
-            <button class="tab-button" onclick="switchTab('skillsContainer'); centerGraph(skillsGraph)" id="skillsTab"><img src="images/skills.png" alt="Skills" width="100"></button>
-            <button class="tab-button" onclick="switchTab('combatSkillsContainer'); centerGraph(combatSkillsGraph)" id="combatTab"><img src="images/combatSkills.png" alt="Combat Skills" width="100"></button>
-            <button class="tab-button" onclick="switchTab('inventoryContainer')" id="inventoryTab"><img src="images/inventory.png" alt="Inventory" width="100"></button>
-            <button class="tab-button" onclick="switchTab('helpContainer')" id="helpTab"><img src="images/other.png" alt="Help" width="100"></button>
-            <button class="tab-button" onclick="restart()" id="reset"><img src="images/restart.png" alt="Reset" width="100"></button>
+            <button class="tab-button" style="margin: 20px 0;" onclick="switchTab('skillsContainer'); centerGraph(skillsGraph)" id="skillsTab"><img src="images/icons/skills.png" alt="Skills" width="100"></button>
+            <button class="tab-button" style="margin: 20px 0;" onclick="switchTab('combatSkillsContainer'); centerGraph(combatSkillsGraph)" id="combatTab"><img src="images/icons/combatSkills.png" alt="Combat Skills" width="100"></button>
+            <button class="tab-button" style="margin: 20px 0;" onclick="switchTab('inventoryContainer')" id="inventoryTab"><img src="images/icons/gun.png" alt="Inventory" width="100"></button>
+            <button class="tab-button" style="margin: 20px 0;" onclick="switchTab('helpContainer')" id="helpTab"><img src="images/icons/other.png" alt="Help" width="100"></button>
+            <button class="tab-button" style="margin: 20px 0;" onclick="restart()" id="reset"><img src="images/icons/restart.png" alt="Reset" width="100"></button>
         </div>
+        
         <div class="tab-container skills-container" id="skillsContainer">
             <div class="skill-web" id="skill-web"></div>
         </div>
+
         <div class="hidden tab-container combat-skills-container" id="combatSkillsContainer">
             <div class="combat-skills" id="combatSkills"></div>
         </div>
+
+
+
+
+
+
         <div class="hidden tab-container inventory-container" id="inventoryContainer">
-            
+            <div id="heldItemsPanel" class="inventory-panel">
+                <h1>Held Items</h1>
+                <span id="heldSpaceInfo"></span>
+                <div id="heldItems" class="item-grid"></div>
+            </div>
+
+            <div id="bagItemsPanel" class="inventory-panel">
+                <h1>Bag Items</h1>
+                <span id="bagSpaceInfo"></span>
+                <button id="removeBagButton" class="hidden" onclick="equipBag('none')">Remove Bag</button>
+                <div id="bagItems" class="item-grid"></div>
+                <div class="bag-choice-container" id="bagChoiceContainer">
+                    <button onclick="equipBag('satchel')">Stachel</button>
+                    <button onclick="equipBag('backpack')">Backpack</button>
+                    <button onclick="equipBag('duffel')">Duffel Bag</button>
+                </div>
+            </div>
+
+            <div id="itemSelectionPanel" class="inventory-panel">
+                <h1>Items</h1>
+                <div class="item-tabs">
+                    <button class="tab-button" onclick="switchInventoryTab('weaponsItemList')" id="inventoryTabWeapons"><img src="images/icons/gun.png" alt="Weapons" width="50"></button>
+                    <button class="tab-button" onclick="switchInventoryTab('weaponmodsItemList')" id="inventoryTabWeaponmod"><img src="images/icons/suppressor.png" alt="Weapon Mods" width="50"></button>
+                    <button class="tab-button" onclick="switchInventoryTab('toolsItemList')" id="inventoryTabTools"><img src="images/icons/lockpick.png" alt="Tools" width="50"></button>
+                    <button class="tab-button" onclick="switchInventoryTab('combatItemList')" id="inventoryTabCombat"><img src="images/icons/medkit.png" alt="Combat" width="50"></button>
+                    <button class="tab-button" onclick="switchInventoryTab('concealedItemList')" id="inventoryTabConcealed"><img src="images/icons/pocket.png" alt="Concealed" width="50"></button>
+                    <button class="tab-button" onclick="switchInventoryTab('armourItemList')" id="inventoryTabArmour"><img src="images/icons/armour.png" alt="Armour" width="50"></button>
+                </div>
+                <div>
+                    <div class="item-list scroll-rect" id="weaponsItemList"></div>
+                    <div class="item-list scroll-rect hidden" id="weaponmodsItemList"></div>
+                    <div class="item-list scroll-rect hidden" id="toolsItemList"></div>
+                    <div class="item-list scroll-rect hidden" id="combatItemList"></div>
+                    <div class="item-list scroll-rect hidden" id="concealedItemList"></div>
+                    <div class="item-list scroll-rect hidden" id="armourItemList"></div>
+                </div>
+            </div>
         </div>
+
+
+
+
+
         <div class="hidden tab-container help-container" id="helpContainer">
             <div class="panel">
                 <h1>Help & Information</h1>
-                <p>You won't find any help here</p>
+                <p>Hold SHIFT to highlight similar skills</p>
+                <a href="https://github.com/scattered-nightshade/epfc-skill-planner" class="github-button">Github Repository</a>
             </div>
         </div>
+
         <div class="skill-effects">
             <p>Hold SHIFT to highlight similar skills</p>
             <h1>Stats Overview</h1>

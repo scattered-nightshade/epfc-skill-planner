@@ -1,16 +1,52 @@
 "use strict";
 
 const levelCap = 55;
+
 let skills = [];
 let combatSkills = [];
-const selectedSkills = new Set();
-const selectedCombatSkills = new Set();
+let items = [];
 
 let skillsGraph;
 let combatSkillsGraph;
 let currentlyHoveredNode;
 
-async function loadSkills() {
+const emptyPlayer = {
+    heldItems: [],
+    bag: null,
+    skills: new Set(),
+    combatSkills: new Set(),
+}
+
+let player = {
+    heldItems: [],
+    bag: null,
+    skills: new Set(),
+    combatSkills: new Set(),
+}
+
+const bagSizes = { 
+    satchel: 4, 
+    backpack: 8, 
+    duffel: 16 
+};
+
+// Exists just to show what properties can exist in a bag
+const emptyBag = { 
+    id: 0,
+    space: 0,
+    items: []
+};
+
+const itemGroups = {
+    weaponsItemList: ['weaponprimary', 'weaponsecondary'],
+    weaponmodsItemList: ['weaponmod'],
+    toolsItemList: ['tools'],
+    combatItemList: ['combat'],
+    concealedItemList: ['concealed'],
+    armourItemList: ['armour']
+};
+
+async function loadApp() {
     const skillsFile = await fetch('data/skills.json');
     skills = await skillsFile.json();
 
@@ -23,10 +59,15 @@ async function loadSkills() {
     const combatSkillsFile = await fetch('data/combatskills.json');
     combatSkills = await combatSkillsFile.json();
 
-    createGraph(skills);
-    createCombatGraph(combatSkills);
+    const itemsFile = await fetch('data/items.json');
+    items = await itemsFile.json();
 
-    loadSkillsFromURL();
+    createGraph();
+    createCombatGraph();
+    loadDataFromURL();
+
+    updateInventory();
+    populateItemsPanel();
 }
 
 
@@ -66,8 +107,32 @@ function decodeBitflags(bitflags, skill, maxId = null) {
             skill.add(index.toString());
         }
     }
-    
 }
+
+function decodeInventoryBitflags(bitflags, targetInventory, maxId) {
+    if (!bitflags) {
+        return;
+    }
+    
+    if (!maxId) {
+        return;
+    }
+
+    let bitflag;
+    try {
+        bitflag = BigInt(bitflags);
+    } 
+    catch (error) {
+        return;
+    }
+
+    for (let index = 0; index <= maxId; index++) {
+        if ((bitflag & (1n << BigInt(index))) !== 0n) {
+            targetInventory.push(index.toString());
+        }
+    }
+}
+
 
 function highestIdInList(list) {
     let max = -1;
@@ -81,23 +146,58 @@ function highestIdInList(list) {
 function updateURL() {
     const params = new URLSearchParams();
 
-    if (selectedSkills.size > 0) {
-        params.set('skills', encodeBitflags(selectedSkills));
+    if (player.skills.size > 0) {
+        params.set('skills', encodeBitflags(player.skills));
     }
 
-    if (selectedCombatSkills.size > 0) {
-        params.set('combat', encodeBitflags(selectedCombatSkills));
+    if (player.combatSkills.size > 0) {
+        params.set('combat', encodeBitflags(player.combatSkills));
+    }
+
+    if (player.heldItems.length > 0) {
+        params.set('helditems', encodeBitflags(player.heldItems));
+    }
+
+    if (player.bag) {
+
+        params.set('bag', player.bag.id);
+
+        if (player.bag.items.length > 0) {
+            params.set('bagitems', encodeBitflags(player.bag.items))
+        }
     }
 
     const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
     window.history.replaceState(null, '', newUrl);
 }
 
-function loadSkillsFromURL() {
+function loadDataFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
 
-    decodeBitflags(urlParams.get('skills'), selectedSkills, highestIdInList(skills));
-    decodeBitflags(urlParams.get('combat'), selectedCombatSkills, highestIdInList(combatSkills));
+    decodeBitflags(urlParams.get('skills'), player.skills, highestIdInList(skills));
+    decodeBitflags(urlParams.get('combat'), player.combatSkills, highestIdInList(combatSkills));
+
+
+    const heldBitflags = urlParams.get('helditems');
+    if (heldBitflags) {
+        player.heldItems = [];
+        decodeInventoryBitflags(heldBitflags, player.heldItems, highestIdInList(items));
+    }
+
+    const bagId = urlParams.get('bag');
+    if (bagId) {
+        player.bag = {
+            id: bagId,
+            space: bagSizes[bagId],
+            items: []
+        };
+
+        const bagItemsBitflags = urlParams.get('bagitems');
+        if (bagItemsBitflags) {
+            player.bag.items = [];
+            decodeInventoryBitflags(bagItemsBitflags, player.bag.items, highestIdInList(items));
+        }
+    }
 
     skillsGraph.nodes().forEach(node => {
         setSkillImage(node);
@@ -108,7 +208,9 @@ function loadSkillsFromURL() {
     });
 
     updateSkillLines();
-    updateSkillEffects();
+    updateInventory();
+    
+    updateStatOverview();
 }
 
 
@@ -124,8 +226,7 @@ function centerGraph(graph) {
 }
 
 function restart() {
-    selectedSkills.clear();
-    selectedCombatSkills.clear();
+    player = emptyPlayer;
 
     skillsGraph.nodes().forEach(node => {
         setSkillImage(node);
@@ -139,12 +240,10 @@ function restart() {
         setCombatSkillImage(node);
     });
 
-    updateSkillEffects();
+    updateInventory();
+    updateStatOverview();
     updateURL();
 }
-
-
-
 
 function calculateClassFromSkillList() {
     let count = [0, 0, 0, 0, 0]; //Burgular, Hacker, Tech, Merc, Con Artist
@@ -168,9 +267,7 @@ function calculateClassFromSkillList() {
         "45": "Assassin"
     };
 
-    console.log(selectedSkills);
-
-    selectedSkills.forEach(skillId => {
+    player.skills.forEach(skillId => {
         const selectedSkill = skills.find(_skill => _skill.id == skillId);
 
         if (!selectedSkill || !selectedSkill.playerClass) {
@@ -241,7 +338,7 @@ function calculateCalssFromPosition(x, y) {
 
 // Skills
 
-function createGraph(skills) {
+function createGraph() {
     const elements = [];
 
     skills.forEach(skill => {
@@ -355,9 +452,9 @@ function addSkillsNodeClickHandler() {
         const skillId = node.id();
         const skill = skills.find(_skill => _skill.id == skillId);
 
-        if (selectedSkills.has(skillId)) {
+        if (player.skills.has(skillId)) {
             if (canDeselect()) {
-                selectedSkills.delete(skillId);
+                player.skills.delete(skillId);
                 setSkillImage(node);
             }
             else {
@@ -366,7 +463,7 @@ function addSkillsNodeClickHandler() {
         } 
         else {
             if (isSkillConnected(skill)){
-                selectedSkills.add(skillId);
+                player.skills.add(skillId);
                 setSkillImage(node);
             }
             else {
@@ -375,7 +472,7 @@ function addSkillsNodeClickHandler() {
         }
 
         updateSkillLines();
-        updateSkillEffects();
+        updateStatOverview();
         updateURL();
     });
 }
@@ -436,7 +533,7 @@ function addHoverHighlight() {
 function setSkillImage(node) {
     const group = node.data('group');
 
-    if (selectedSkills.has(node.id())) {
+    if (player.skills.has(node.id())) {
         node.style('background-image', `images/skills/${group}.png`);
     } 
     else {
@@ -445,12 +542,12 @@ function setSkillImage(node) {
 }
 
 function isSkillConnected(skill) {
-    if (selectedSkills.size == 0 & skill.core_skill) {
+    if (player.skills.size == 0 & skill.core_skill) {
         return true;
     }
 
     const selectedSkillNeighbours = skill.connections;
-    return selectedSkillNeighbours.some(neighbour => selectedSkills.has(neighbour));
+    return selectedSkillNeighbours.some(neighbour => player.skills.has(neighbour));
 }
 
 function canDeselect(skill) {
@@ -459,8 +556,8 @@ function canDeselect(skill) {
 
 function updateSkillLines() {
     skillsGraph.edges().forEach(edge => {
-        const preexistingSkill = selectedSkills.has(edge.source().id());
-        const newSkill = selectedSkills.has(edge.target().id());
+        const preexistingSkill = player.skills.has(edge.source().id());
+        const newSkill = player.skills.has(edge.target().id());
 
         if (preexistingSkill && newSkill) {
             edge.style('line-color', '#ffffff');
@@ -474,8 +571,8 @@ function updateSkillLines() {
 function calculateSkillPoints() {
     let total = 0;
 
-    const mappedSelectedSkills = Array.from(selectedSkills).map(id => 
-        skills.find(s => s.id === id)
+    const mappedSelectedSkills = Array.from(player.skills).map(id => 
+        skills.find(s => s.id == id)
     );
 
     // Count cores
@@ -504,7 +601,7 @@ function calculateSkillPoints() {
 
 // Combat Skills
 
-function createCombatGraph(combatSkills) {
+function createCombatGraph() {
     const elements = [];
 
     combatSkills.forEach(combatSkill => {
@@ -579,8 +676,8 @@ function addCombatSkillsNodeClickHandler() {
         const conflictingSkills = combatSkill["mutual-exclusivity"] || [];
 
         conflictingSkills.forEach(conflictId => {
-            if (selectedCombatSkills.has(conflictId)) {
-                selectedCombatSkills.delete(conflictId);
+            if (player.combatSkills.has(conflictId)) {
+                player.combatSkills.delete(conflictId);
 
                 const conflictingSkill = combatSkillsGraph.getElementById(conflictId);
                 if (conflictingSkill) {
@@ -589,16 +686,16 @@ function addCombatSkillsNodeClickHandler() {
             }
         });
 
-        if (selectedCombatSkills.has(combatSkillId)) {
-            selectedCombatSkills.delete(combatSkillId);
+        if (player.combatSkills.has(combatSkillId)) {
+            player.combatSkills.delete(combatSkillId);
             setCombatSkillImage(node);
         } 
         else {
-            selectedCombatSkills.add(combatSkillId);
+            player.combatSkills.add(combatSkillId);
             setCombatSkillImage(node);
         }
 
-        updateSkillEffects();
+        updateStatOverview();
         updateURL();
     });
 }
@@ -606,7 +703,7 @@ function addCombatSkillsNodeClickHandler() {
 function caclulateCombatSkillPoints() {
     let total = 0;
 
-    total = selectedCombatSkills.size;
+    total = player.combatSkills.size;
 
     return total;
 }
@@ -614,7 +711,7 @@ function caclulateCombatSkillPoints() {
 function setCombatSkillImage(node) {
     const group = node.data('group');
 
-    if (selectedCombatSkills.has(node.id())) {
+    if (player.combatSkills.has(node.id())) {
         node.style('background-image', `images/combatSkills/${group}.png`);
     } 
     else {
@@ -624,11 +721,428 @@ function setCombatSkillImage(node) {
 
 
 
+
+function findItem(itemId) {
+    return items.find(_item => {
+        return _item.id == itemId;
+    });
+}
+
+function modifyInventory(location, itemId, action) {
+    const target = location == "held" ? player.heldItems : player.bag?.items;
+    if (!target) return;
+
+    if (action == "add") {
+        target.push(itemId);
+    }
+    if (action == "remove") {
+        const index = target.indexOf(itemId);
+        if (index != -1) {
+            target.splice(index, 1);
+        }
+    }
+}
+
+function getUsedSpace(itemsArray, location = 'held') {
+    return itemsArray.reduce((used, id) => {
+        const item = findItem(id);
+        if (!item || item.space <= 0) {
+            return used;
+        }
+
+        if (location == 'held' && ["weaponprimary", "weaponsecondary", "armour", "offhand"].includes(item.type)) {
+            return used;
+        }
+
+        return used + item.space;
+    }, 0);
+}
+
+
+function getHeldSpaceCap() {
+    const base = 6;
+
+    const esSkills = skills.filter(skill => {
+        return player.skills.has(skill.id) && skill.group === "es";
+    });
+
+    const concealedPockets = player.heldItems.includes("21");
+    return base + (esSkills.length >= 2 ? 2 : 0) + (concealedPockets ? 1 : 0);
+}
+
+function getBagSpaceCap() {
+    if (player.bag) {
+        return player.bag.space;
+    }
+    else {
+        return 0;
+    }
+}
+
+function getItemCount(itemId) {
+    let count = player.heldItems.filter(id => {
+        return id == itemId;
+    }).length;
+
+    if (player.bag) {
+        count += player.bag.items.filter(id => {
+            return id == itemId;
+        }).length;
+    }
+
+    return count;
+}
+
+function checkItemCanFit(item, location) {
+    let itemsArray = [];
+
+    if (location == 'held') {
+        itemsArray = player.heldItems;
+    }
+    else if (location == 'bag') {
+        if (player.bag) {
+            itemsArray = player.bag.items;
+        }
+        else {
+            itemsArray = [];
+        }
+    }
+
+    const used = getUsedSpace(itemsArray, location);
+
+    let cap = 0;
+
+    if (location == 'held') {
+        cap = getHeldSpaceCap();
+    }
+    else if (location == 'bag') {
+        cap = getBagSpaceCap();
+    }
+
+    const ignoredItems = ["weaponprimary", "weaponsecondary", "armour", "offhand"];
+
+    if (location == 'held' && ignoredItems.includes(item.type)) {
+        return true;
+    }
+
+    if (location == 'bag' && item.space <= 0) {
+        return false;
+    }
+
+    return ((used + item.space) <= cap);
+}
+
+
+function getWeaponLimits() {
+    let maxWeapons = 2;
+    let maxPrimary = 1;
+
+    const hasWOC = player.combatSkills.has("19");
+    const hasFA = player.combatSkills.has("20");
+
+    if (hasFA) { 
+        maxWeapons = 3; maxPrimary = 2; 
+    }
+    else if (hasWOC) { 
+        maxWeapons = 1; maxPrimary = 1; 
+    }
+
+    return { maxWeapons, maxPrimary };
+}
+
+function countWeapons() {
+    let primary = 0;
+    let secondary = 0;
+
+    let bagItems = [];
+
+    if (player.bag) {
+        bagItems = player.bag.items;
+    }
+
+    const allItems = [...player.heldItems, ...bagItems];
+
+    for (const id of allItems) {
+        const item = findItem(id);
+        if (!item) {
+            continue;
+        }
+
+        if (item.type == "weaponprimary") {
+            primary++;
+        }
+
+        if (item.type == "weaponsecondary") {
+            secondary++;
+        }
+    }
+
+    const total = primary + secondary;
+
+    return { primary, secondary, total };
+}
+
+function canAddWeapon(item) {
+    if (!item) {
+        return false;
+    }
+    
+    if (!itemGroups.weaponsItemList.includes(item.type)) {
+        return true;
+    }
+
+    const limits = getWeaponLimits();
+    const count = countWeapons();
+
+    const newTotal = count.total + 1;
+    const primaryAfterAdd = count.primary + (item.type == 'weaponprimary' ? 1 : 0);
+
+    if (newTotal > limits.maxWeapons) {
+        return false;
+    }
+
+    if (item.type == "weaponprimary" && primaryAfterAdd > limits.maxPrimary) {
+        return false;
+    }
+
+    return true;
+}
+
+
+
+function tryAddItem(itemId, location = 'held', move = false) {
+    const item = findItem(itemId);
+
+    if (!item) {
+        return;
+    }
+
+    if (!canAddWeapon(item)) {
+        return;
+    }
+
+    if (!checkItemCanFit(item, location)) {
+        return;
+    }
+
+    let count = getItemCount(itemId);
+    if (move) {
+        count -= 1;
+    }
+    if (item.cap > -1 && count >= item.cap) {
+        return;
+    }
+
+    modifyInventory(location, itemId, 'add');
+
+    if (move) {
+        if (location === 'held') {
+            modifyInventory('bag', itemId, 'remove');
+        }
+        if (location === 'bag') {
+            modifyInventory('held', itemId, 'remove');
+        }
+    }
+
+    updateInventory();
+}
+
+
+
+
+
+function equipBag(bagId) {
+    if (bagId == "none") {
+        player.bag = null;
+        updateInventory();
+        return;
+    }
+
+    player.bag = {
+        id: bagId,
+        space: bagSizes[bagId],
+        items: []
+    };
+
+    updateInventory();
+}
+
+
+function getConcealedThreshold() {
+    let threshold = 5;
+    const inconSkills = skills.filter(skill => {
+        return player.skills.has(skill.id) && skill.group === "incon";
+    });
+    const customHolsters = player.heldItems.includes("22");
+    return threshold + (inconSkills.length >= 2 ? 1 : 0) + (customHolsters ? 1 : 0);
+}
+
+function canBeConcealed(item) {
+    if (item.type !== "weapon") {
+        return true;
+    }
+
+    return getConcealedThreshold() >= item.space;
+}
+
+function hasConcealedItem() {
+    return player.heldItems.some(id => {
+        const item = findItem(id);
+        if (item) {
+            return item.concealed;
+        }
+        else {
+            return false;
+        }
+    });
+}
+
+function createItemHTML(item, location) {
+    const container = document.createElement("div");
+    container.classList.add("item");
+
+    container.innerHTML = `
+        <strong>${item.name}</strong><br>
+        <small>${item.space} space</small>
+        <small>Weight: ${item.weight}</small><br>
+    `;
+
+    if (location == "held") {
+        container.innerHTML += `
+            <button class="tab-button" onclick="tryAddItem('${item.id}', 'bag', true)"><img src="images/icons/backpack.png" width="30"></button>
+            <button onclick="modifyInventory('held', '${item.id}', 'remove'); updateInventory()">Remove</button>
+        `;
+    } 
+    else if (location == "bag") {
+        container.innerHTML += `
+            <button class="tab-button" onclick="tryAddItem('${item.id}', 'held', true)"><img src="images/icons/hand.png" width="30"></button>
+            <button onclick="modifyInventory('bag', '${item.id}', 'remove'); updateInventory()">Remove</button>
+        `;
+    }
+
+    return container;
+}
+
+
+function renderItems(containerId, itemsArray, location) {
+    const itemContainer = document.getElementById(containerId);
+    itemContainer.innerHTML = '';
+    itemsArray.forEach(id => {
+        itemContainer.appendChild(createItemHTML(findItem(id), location));
+    });
+}
+
+function updateInventory() {
+    document.getElementById("heldSpaceInfo").textContent = `${getUsedSpace(player.heldItems, 'held')} / ${getHeldSpaceCap()} space`;
+    document.getElementById("bagSpaceInfo").textContent = player.bag ? `${getUsedSpace(player.bag.items, 'bag')} / ${getBagSpaceCap()} space` : "No bag equipped";
+
+    renderItems("heldItems", player.heldItems, "held");
+    if (player.bag) {
+        renderItems("bagItems", player.bag.items, "bag")
+    }
+    else {
+        document.getElementById("bagItems").innerHTML = "";
+    }
+
+    const bagChoiceElement = document.getElementById("bagChoiceContainer");
+    const removeBagButton = document.getElementById("removeBagButton");
+    if (player.bag != null) {
+        bagChoiceElement.classList.add("hidden");
+        removeBagButton.classList.remove("hidden");
+    }
+    else {
+        bagChoiceElement.classList.remove("hidden");
+        removeBagButton.classList.add("hidden");
+    }
+
+    updateURL();
+    updateStatOverview();
+}
+
+function populateItemsPanel() {
+
+    const _itemGroups = Object.entries(itemGroups);
+
+    _itemGroups.forEach(([itemContainerId, itemTypes]) => {
+        const container = document.getElementById(itemContainerId);
+        if (!container) {
+            return;
+        }
+
+        items.filter(item => {
+            itemTypes.includes(item.type)
+        }).forEach(item => {
+                const itemContainer = document.createElement("div");
+                const br = document.createElement("br");
+
+                itemContainer.classList.add("item");
+
+                itemContainer.innerHTML = `
+                    <strong>${item.name}</strong><br>
+                    <small>Space: ${item.space}</small>
+                    <small>Weight: ${item.weight}</small><br>
+                    <button class="tab-button" onclick="tryAddItem('${item.id}', 'held', false);"><img src="images/icons/hand.png" width="30"></button>
+                    <button class="tab-button" onclick="tryAddItem('${item.id}', 'bag', false);"><img src="images/icons/backpack.png" width="30"></button>
+                `;
+                container.appendChild(itemContainer);
+                container.appendChild(br);
+            });
+    });
+}
+
+function getRawWeight() {
+    let total = 0;
+
+    for (const id of player.heldItems) {
+        const item = findItem(id);
+        if (item) {
+            total += item.weight;
+        }
+    }
+
+    if (player.bag) {
+        for (const id of player.bag.items) {
+            const item = findItem(id);
+            total += item.weight;
+        }
+    }
+
+    return total;
+}
+
+function getTotalWeight() {
+    let total = 0;
+
+    for (const id of player.heldItems) {
+        const item = findItem(id);
+        if (item) {
+            total += item.weight;
+        }
+    }
+
+    if (player.bag) {
+        for (const id of player.bag.items) {
+            const item = findItem(id);
+            if (player.bag.bagId == 'backpack') {
+                total += item.weight * 0.8;
+            }
+            else {
+                total += item.weight;
+            }
+        }
+    }
+
+    return total;
+}
+
+
 //The actual important stuff
 
-function updateSkillEffects() {
-    
-    let weight = 0;
+function updateStatOverview() {
+
+    console.log(player);
+
+    let weight = getTotalWeight();
 
     let agility = 0;
     let bruteStrength = 0;
@@ -664,11 +1178,13 @@ function updateSkillEffects() {
     let tcDamageBoost = 0;
     let cdgDamageBoost = 0;
     let csCritDamage = 0;
+    let osExtraExplosives = 0;
+    let osSkills = 0
 
 
     const coreSkillsSelected = [];
 
-    selectedSkills.forEach(id => {
+    player.skills.forEach(id => {
         const skill = skills.find(_skill => _skill.id == id);
 
         if (!skill) {
@@ -690,7 +1206,7 @@ function updateSkillEffects() {
                 ciCritRate += 1.5;
                 break;
             case "sd":
-                sdCameraDetection += 5;
+                sdCameraDetection += 4;
                 break;
             case "te":
                 teTechItems += 5;
@@ -725,7 +1241,7 @@ function updateSkillEffects() {
         }
     });
 
-    selectedCombatSkills.forEach(id => {
+    player.combatSkills.forEach(id => {
         const combatSkill = combatSkills.find(_skill => _skill.id == id);
 
         if (!combatSkill) {
@@ -770,6 +1286,8 @@ function updateSkillEffects() {
                 vtDamageIncrease += 15;
                 break;
             case "os":
+                osExtraExplosives += 1;
+                osSkills += 1;
                 break;
             case "rc":
                 break;
@@ -798,6 +1316,26 @@ function updateSkillEffects() {
                 break;
         }
     });
+
+    const c4 = findItem("15");
+    if (osSkills >= 2) {
+        c4.cap = 2;
+    }
+    else {
+        c4.cap = 1;
+    }
+
+    let excessWeight = 0;
+    let excessRawWeight = 0;
+
+    if (getTotalWeight() > 12) {
+        excessWeight = getTotalWeight() - 12;
+    }
+
+    if (getRawWeight() > 12) {
+        excessRawWeight = getRawWeight() - 12;
+    }
+
 
     const skillPointsSpent = calculateSkillPoints();
     const skillPointsSpentElement = document.getElementById("pointsSpent");
@@ -840,7 +1378,8 @@ function updateSkillEffects() {
     document.getElementById('health').innerText = (100 + vitMaxHealth).toString();
     document.getElementById('stamina').innerText = (100 + conMaxStamina).toString();
     document.getElementById('staminaRegenRate').innerText = (15 * (1.0 + conStamRegen) * (agility >= 2 ? 1.5 : 1)).toString();
-    document.getElementById('dodgeChance').innerText = (lpDodgeRate + htCrouchedDodgeChance).toString(); // Need to consider weight at some point: Each point of weight beyond 12 reduces your dodge change by a multiplicative ~2.08%.
+    document.getElementById('dodgeChance').innerText = (lpDodgeRate * ((excessRawWeight * 1.0208) + 1)).toString();
+    document.getElementById('crouchedDodgeChance').innerText = ((lpDodgeRate + htCrouchedDodgeChance) * (excessRawWeight * 1.0208)).toString();
     document.getElementById('critChance').innerText = (ciCritRate + lsCritChance).toString();
     document.getElementById('reloadSpeed').innerText = (100 + fhReloadSpeed + wocReloadSpeed + hpReloadSpeed).toString();
     document.getElementById('appliedForceSpeed').innerText = (100 + afDrillSpeed).toString();
@@ -852,6 +1391,9 @@ function updateSkillEffects() {
     document.getElementById('suspiciousDetectionSpeed').innerText = (1.0 - (disSuspiciousDetectionSpeed / 100)).toString();
     document.getElementById('disguisedDetectionSpeed').innerText = (1.0 - (masDisguiseDetectionSpeed / 100)).toString();
     document.getElementById('cameraDetectionSpeed').innerText = (1.0 - (sdCameraDetection / 100)).toString();
+    document.getElementById('weight').innerText = weight.toString();
+    document.getElementById('rawWeight').innerText = getRawWeight().toString();
+
 
     let coreSkillMessage = "";
     if (coreSkillsSelected.length == 0) {
@@ -861,4 +1403,4 @@ function updateSkillEffects() {
 }
 
 
-loadSkills();
+loadApp();
