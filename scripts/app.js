@@ -1070,7 +1070,7 @@ function populateItemsPanel() {
         }
 
         items.filter(item => {
-            itemTypes.includes(item.type)
+            return itemTypes.includes(item.type);
         }).forEach(item => {
                 const itemContainer = document.createElement("div");
                 const br = document.createElement("br");
