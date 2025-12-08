@@ -1228,7 +1228,7 @@ function updateStatOverview() {
             case "af":
                 afDrillSpeed += 5;
                 break;
-            case "con":
+            case "cond":
                 conMaxStamina += 6;
                 conStamRegen += 0.03;
                 break;
