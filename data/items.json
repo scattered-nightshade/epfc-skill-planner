@@ -30,7 +30,7 @@
     
     { "id": "23", "name": "Concealed Scout Armour", "type": "armour", "concealed": true, "offhand": false, "space": -1, "weight": 10, "cap": 1 },
     { "id": "24", "name": "Scout Armour",           "type": "armour", "concealed": false, "offhand": false, "space": 7, "weight": 10, "cap": 1 },
-    { "id": "24", "name": "Frontline Armour",       "type": "armour", "concealed": false, "offhand": false, "space": 9, "weight": 16, "cap": 1 },
+    { "id": "41", "name": "Frontline Armour",       "type": "armour", "concealed": false, "offhand": false, "space": 9, "weight": 16, "cap": 1 },
 
     { "id": "25", "name": "Budget Suppressor",      "type": "weaponmod", "concealed": false, "offhand": false, "space": 2, "weight": 0, "cap": 1 },
     { "id": "26", "name": "Lynx Suppressor",        "type": "weaponmod", "concealed": false, "offhand": false, "space": 2, "weight": 0, "cap": 1 },

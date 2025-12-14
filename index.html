@@ -2,9 +2,15 @@
 <html>
     
 <head>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles/styles.css">
+    <link rel="stylesheet" href="/styles/jquery-ui.css">
+    <link rel="stylesheet" href="/styles/jquery-ui.structure.css">
+    <link rel="stylesheet" href="/styles/jquery-ui.theme.css">
 
-    <script src="https://unpkg.com/cytoscape@3.24.0/dist/cytoscape.min.js"></script>
+
+    <script src="/scripts/jquery-3.7.1.min.js"></script>
+    <script src="/scripts/jquery-ui.min.js"></script>
+    <script src="/scripts/cytoscape.min.js"></script>
 
     <title>EPFC Skill planner</title>
     <meta content="EPFC Skill planner" property="og:title" />
@@ -31,11 +37,6 @@
         <div class="hidden tab-container combat-skills-container" id="combatSkillsContainer">
             <div class="combat-skills" id="combatSkills"></div>
         </div>
-
-
-
-
-
 
         <div class="hidden tab-container inventory-container" id="inventoryContainer">
             <div id="heldItemsPanel" class="inventory-panel">
@@ -77,10 +78,6 @@
             </div>
         </div>
 
-
-
-
-
         <div class="hidden tab-container help-container" id="helpContainer">
             <div class="panel">
                 <h1>Help & Information</h1>
@@ -96,20 +93,25 @@
             <h2><b>Combat points spent:</b> <span id="combatPointsSpent">0</span></h2>
 
             <p><b>Health:</b> <span id="health">100</span></p>
-            <p class="nerd-stats"><b>Effective Health:</b> <span id="effectiveHealth">0</span></p>
+            <p title="This is in consideration of dodge, (not (yet)) armour and armour damage reduction"><b>Effective Health:</b> <span id="effectiveHealth">0</span></p>
             <p><b>Damage Reduction:</b> <span id="damageReduction">100</span>%</p>
             <p><b>Stamina:</b> <span id="stamina">100</span></p>
-            <p class="nerd-stats"><b>Stamina Regeneration Rate:</b> <span id="staminaRegenRate">15</span>/s</p>
-            <p class="nerd-stats"><b>Stamina Consumption Rate:</b> <span id="staminaConsumptionRate">N/a</span></p>
-            <p><b>Speed:</b> <span id="speed">N/a</span></p>
+            <p><b>Stamina Regeneration Rate:</b> <span id="staminaRegenRate">15</span>/s</p>
+            <p><b>Stamina Consumption Rate:</b> <span id="staminaConsumptionRate">9</span>/s</p>
             <p><b>Weight:</b> <span id="weight">0</span> <b>Raw:</b> <span id="rawWeight">0</span></p>
             <br>
-            <p><b>Damage:</b> <span id="damage">100</span>%</p>
-            <p><b>Headshot Damage bonus:</b> <span id="headshotDamage">100</span>%</p>
-            <p><b>Critical Damage Bonus:</b> <span id="critDamage">100</span>%</p>
-            <p><b>Ammo Available:</b> <span id="ammo">100</span>%</p>
+            <p><b>Speed:</b> <span id="speed">1</span>x</p>
+            <p><b>Sprint Speed:</b> <span id="sprintSpeed">1.6</span>x</p>
+            <p><b>Crouched Speed:</b> <span id="crouchSpeed">0.7</span>x</p>
+            <p><b>Crouched Sprint Speed:</b> <span id="crouchedSprintSpeed">1.05</span>x</p>
             <br>
-            <p><b>Dodge Chance:</b> <span id="dodgeChance">0</span>% <b>Crouched:</b> <span id="crouchedDodgeChance"></span>%</p>
+            <p><b>Damage:</b> <span id="damage">100</span>%</p>
+            <p><b>Headshot Damage:</b> <span id="headshotDamage">100</span>%</p>
+            <p><b>Critical Damage:</b> <span id="critDamage">150</span>%</p>
+            <p><b>Headshot Critical Damage:</b> <span id="headshotCritDamage">150</span>%</p>
+            <p id="ammoContainer" title=""><b>Ammo Available:</b> <span id="ammo">100</span>%</p>
+            <br>
+            <p><b>Dodge Chance:</b> <span id="dodgeChance">0</span>%</p>
             <p><b>Crit Chance:</b> <span id="critChance">0</span>%</p>
             <p><b>Reload Speed:</b> <span id="reloadSpeed">100</span>%</p>
             <br>
@@ -130,9 +132,9 @@
             <!--Not sure if I actually need this lol, will figure out if I do when I get around to items-->
         </div>
     </main>
-
-    <script src="/scripts/app.js"></script>
-    <script src="/scripts/tabs.js"></script>
 </body>
+
+<script src="/scripts/app.js"></script>
+<script src="/scripts/tabs.js"></script>
 
 </html>

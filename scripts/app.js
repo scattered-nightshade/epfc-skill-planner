@@ -1,14 +1,10 @@
 "use strict";
 
 const levelCap = 55;
-
-let skills = [];
-let combatSkills = [];
-let items = [];
-
-let skillsGraph;
-let combatSkillsGraph;
-let currentlyHoveredNode;
+const minorSkillCost = 1;
+const majorSkillCost = 2;
+const coreSkillCost = 2;
+const ignoreFirstCoreSkill = true;
 
 const emptyPlayer = {
     heldItems: [],
@@ -37,6 +33,16 @@ const emptyBag = {
     items: []
 };
 
+const ammoCaps = {
+    "9mm": 150,
+    ".45": 120,
+    "12 gauge buckshot": 40,
+    "12 gauge slugs": 40,
+    "5.56mm": 120,
+    "7.62mm": 40,
+    ".50 BMG": 4,
+}
+
 const itemGroups = {
     weaponsItemList: ['weaponprimary', 'weaponsecondary'],
     weaponmodsItemList: ['weaponmod'],
@@ -45,6 +51,21 @@ const itemGroups = {
     concealedItemList: ['concealed'],
     armourItemList: ['armour']
 };
+
+let skills = [];
+let combatSkills = [];
+let items = [];
+
+let skillsGraph;
+let combatSkillsGraph;
+let currentlyHoveredNode;
+
+$(function () {
+    $(document).tooltip();
+});
+
+
+//
 
 async function loadApp() {
     const skillsFile = await fetch('data/skills.json');
@@ -571,26 +592,23 @@ function updateSkillLines() {
 function calculateSkillPoints() {
     let total = 0;
 
-    const mappedSelectedSkills = Array.from(player.skills).map(id => 
-        skills.find(s => s.id == id)
-    );
+    const mappedSelectedSkills = Array.from(player.skills).map(skillId => skills.find(_skill => _skill.id == skillId));
 
-    // Count cores
-    const coreSkills = mappedSelectedSkills.filter(s => s.core_skill);
+
+    const coreSkills = mappedSelectedSkills.filter(_skill => _skill.core_skill);
 
     if (coreSkills.length > 0) {
-        total += (coreSkills.length - 1) * 2;
+        if (ignoreFirstCoreSkill) {
+            total += (coreSkills.length - 1) * coreSkillCost;
+        }
+        else {
+            total += coreSkills.length * coreSkillCost;
+        }
     }
 
-    // Major
-    total += mappedSelectedSkills.filter(_skill => {
-        return _skill.major_skill && !_skill.core_skill;
-    }).length * 2;
+    total += mappedSelectedSkills.filter(_skill => _skill.major_skill && !_skill.core_skill ).length * majorSkillCost;
 
-    // Minor
-    total += mappedSelectedSkills.filter(_skill => {
-        return !_skill.major_skill && !_skill.core_skill;
-    }).length;
+    total += mappedSelectedSkills.filter(_skill => !_skill.major_skill && !_skill.core_skill ).length * minorSkillCost;
 
     return total;
 }
@@ -720,7 +738,7 @@ function setCombatSkillImage(node) {
 }
 
 
-
+// Inventory
 
 function findItem(itemId) {
     return items.find(_item => {
@@ -1110,7 +1128,7 @@ function getRawWeight() {
     return total;
 }
 
-function getTotalWeight() {
+function getWeight() {
     let total = 0;
 
     for (const id of player.heldItems) {
@@ -1136,207 +1154,30 @@ function getTotalWeight() {
 }
 
 
-//The actual important stuff
-
-function updateStatOverview() {
-
-    console.log(player);
-
-    let weight = getTotalWeight();
-
-    let agility = 0;
-    let bruteStrength = 0;
-    
-    let conMaxStamina = 0;
-    let conStamRegen = 0;
-    let afDrillSpeed = 0;
-    let fhLockpickSpeed = 0;
-    let fhReloadSpeed = 0;
-    let masDisguiseDetectionSpeed = 0;
-    let disSuspiciousDetectionSpeed = 0;
-    let lpDetectionSpeed = 0;
-    let lpDodgeRate = 0;
-    let eaHackSpeed = 0;
-    let eaHackDetection = 0;
-    let ciCritRate = 0;
-    let ciHackResourceCost = 0;
-    let teTechItems = 0;
-    let sdCameraDetection = 0;
-
-    let reDamageReduction = 0;
-    let hpReloadSpeed = 0;
-    let hpFasterAiming = 0;
-    let scavCombatItemRechargeTime = 0;
-    let arExtraAmmo = 0;
-    let lsCritChance = 0;
-    let vitMaxHealth = 0;
-    let htCrouchedDodgeChance = 0;
-    let exeDamageIncrease = 0;
-    let vtDamageIncrease = 0;
-    let wocExtraAmmo = 0;
-    let wocReloadSpeed = 0;
-    let tcDamageBoost = 0;
-    let cdgDamageBoost = 0;
-    let csCritDamage = 0;
-    let osExtraExplosives = 0;
-    let osSkills = 0
-
-
-    const coreSkillsSelected = [];
-
-    player.skills.forEach(id => {
-        const skill = skills.find(_skill => _skill.id == id);
-
-        if (!skill) {
-            return;
-        };
-
-        if (skill.core_skill) {
-            coreSkillsSelected.push(skill.name);
-        }
-
-
-        switch (skill.group) {
-            case "ea":
-                eaHackSpeed += 5;
-                eaHackDetection -= 5;
-                break;
-            case "ci":
-                ciHackResourceCost += 5;
-                ciCritRate += 1.5;
-                break;
-            case "sd":
-                sdCameraDetection += 4;
-                break;
-            case "te":
-                teTechItems += 5;
-                break;
-            case "fh":
-                fhLockpickSpeed += 5;
-                fhReloadSpeed += 3;
-                break;
-            case "lp":
-                lpDetectionSpeed += 4;
-                lpDodgeRate += 3;
-                break;
-            case "dis":
-                disSuspiciousDetectionSpeed += 5;
-                break;
-            case "mas":
-                masDisguiseDetectionSpeed += 4;
-                break;
-            case "af":
-                afDrillSpeed += 5;
-                break;
-            case "cond":
-                conMaxStamina += 6;
-                conStamRegen += 0.03;
-                break;
-            case "agil":
-                agility += 1;
-                break;
-            case "bs":
-                bruteStrength += 1;
-                break;
-        }
+function hasArmourEquipped() {
+    return player.heldItems.some(itemId => {
+        const item = findItem(itemId);
+        return item && item.type == "armour";
     });
+}
 
-    player.combatSkills.forEach(id => {
-        const combatSkill = combatSkills.find(_skill => _skill.id == id);
 
-        if (!combatSkill) {
-            return;
-        };
+// Tooltips
 
-        switch (combatSkill.group) {
-            case "ma":
-                break;
-            case "arp":
-                break;
-            case "re":
-                reDamageReduction += 20;
-                break;
-            case "hp":
-                hpReloadSpeed += 20;
-                hpFasterAiming += 20;
-                break;
-            case "ae":
-                break;
-            case "scav":
-                scavCombatItemRechargeTime += 25;
-                break;
-            case "ar":
-                arExtraAmmo += 25;
-                break;
-            case "br":
-                break;
-            case "ls":
-                lsCritChance += 10;
-                break;
-            case "vit":
-                vitMaxHealth += 20;
-                break;
-            case "ht":
-                htCrouchedDodgeChance += 20;
-                break;
-            case "exe":
-                exeDamageIncrease += 25;
-                break;
-            case "vt":
-                vtDamageIncrease += 15;
-                break;
-            case "os":
-                osExtraExplosives += 1;
-                osSkills += 1;
-                break;
-            case "rc":
-                break;
-            case "fc":
-                break;
-            case "un":
-                break;
-            case "woc":
-                wocExtraAmmo += 50;
-                wocReloadSpeed += 20;
-                break;
-            case "fa":
-                break;
-            case "gs":
-                break;
-            case "reap":
-                break;
-            case "tc":
-                tcDamageBoost += 20;
-                break;
-            case "cdg":
-                cdgDamageBoost += 50;
-                break;
-            case "cs":
-                csCritDamage += 100;
-                break;
-        }
-    });
+function updateAmmoTooltips(ammoMult) {
+    const ammoContainer = document.getElementById("ammoContainer");
 
-    const c4 = findItem("15");
-    if (osSkills >= 2) {
-        c4.cap = 2;
-    }
-    else {
-        c4.cap = 1;
+    let tooltipText = "";
+
+    for (const ammoType in ammoCaps) {
+        const ammo = ammoCaps[ammoType] * ammoMult;
+        tooltipText += `${ammoType}: ${ammo} | `;
     }
 
-    let excessWeight = 0;
-    let excessRawWeight = 0;
+    ammoContainer.setAttribute("title", "| " + tooltipText);
+}
 
-    if (getTotalWeight() > 12) {
-        excessWeight = getTotalWeight() - 12;
-    }
-
-    if (getRawWeight() > 12) {
-        excessRawWeight = getRawWeight() - 12;
-    }
-
-
+function setSkillPointsLabelColours() {
     const skillPointsSpent = calculateSkillPoints();
     const skillPointsSpentElement = document.getElementById("pointsSpent");
     if (skillPointsSpent > levelCap) {
@@ -1373,26 +1214,272 @@ function updateStatOverview() {
     }
 
     combatSkillPointsSpentElement.innerText = combatSkillPointsSpent;
+}
+
+
+//The actual important stuff
+
+function updateStatOverview() {
+
+    let agility = 0;
+    let bruteStrength = 0;
+    let armourProf = 0;
+    
+    let conMaxStamina = 0;
+    let conStamRegen = 0;
+    let afDrillSpeed = 0;
+    let fhLockpickSpeed = 0;
+    let fhReloadSpeed = 0;
+    let masDisguiseDetectionSpeed = 0;
+    let disSuspiciousDetectionSpeed = 0;
+    let lpDetectionSpeed = 0;
+    let lpDodgeChance = 0;
+    let eaHackSpeed = 0;
+    let eaHackDetection = 0;
+    let ciCritRate = 0;
+    let ciHackResourceCost = 0;
+    let teTechItems = 0;
+    let sdCameraDetection = 0;
+
+    let reDamageReduction = 0;
+    let hpReloadSpeed = 0;
+    let hpFasterAiming = 0;
+    let scavCombatItemRechargeTime = 0;
+    let arExtraAmmo = 0;
+    let lsCritChance = 0;
+    let vitMaxHealth = 0;
+    let htDodgeChance = 0;
+    let exeHeadshotDmg = 0;
+    let vtDamageIncrease = 0;
+    let wocExtraAmmo = 0;
+    let wocReloadSpeed = 0;
+    let tcDamageBoost = 0;
+    let cdgDamageBoost = 0;
+    let csCritDamage = 0;
+    let osExtraExplosives = 0;
+    let osSkills = 0
+
+
+    const coreSkillsSelected = [];
+
+    player.skills.forEach(id => {
+        const skill = skills.find(_skill => _skill.id == id);
+
+        if (!skill) {
+            return;
+        }
+
+        if (skill.core_skill) {
+            coreSkillsSelected.push(skill.name);
+        }
+
+
+        switch (skill.group) {
+            case "ea":
+                eaHackSpeed += 5;
+                eaHackDetection -= 5;
+                break;
+            case "ci":
+                ciHackResourceCost += 5;
+                ciCritRate += 1.5;
+                break;
+            case "sd":
+                sdCameraDetection += 4;
+                break;
+            case "te":
+                teTechItems += 5;
+                break;
+            case "fh":
+                fhLockpickSpeed += 5;
+                fhReloadSpeed += 3;
+                break;
+            case "lp":
+                lpDetectionSpeed += 4;
+                lpDodgeChance += 0.03;
+                break;
+            case "dis":
+                disSuspiciousDetectionSpeed += 5;
+                break;
+            case "mas":
+                masDisguiseDetectionSpeed += 4;
+                break;
+            case "af":
+                afDrillSpeed += 5;
+                break;
+            case "cond":
+                conMaxStamina += 6;
+                conStamRegen += 0.03;
+                break;
+            case "agil":
+                agility += 1;
+                break;
+            case "bs":
+                bruteStrength += 1;
+                break;
+        }
+    });
+
+    player.combatSkills.forEach(id => {
+        const combatSkill = combatSkills.find(_skill => _skill.id == id);
+
+        if (!combatSkill) {
+            return;
+        };
+
+        switch (combatSkill.group) {
+            case "ma":
+                break;
+            case "arp":
+                armourProf += 1;
+                break;
+            case "re":
+                reDamageReduction += 0.1;
+                break;
+            case "hp":
+                hpReloadSpeed += 20;
+                hpFasterAiming += 20;
+                break;
+            case "ae":
+                break;
+            case "scav":
+                scavCombatItemRechargeTime += 25;
+                break;
+            case "ar":
+                arExtraAmmo += 0.25;
+                break;
+            case "br":
+                break;
+            case "ls":
+                lsCritChance += 10;
+                break;
+            case "vit":
+                vitMaxHealth += 20;
+                break;
+            case "ht":
+                htDodgeChance += 0.20;
+                break;
+            case "exe":
+                exeHeadshotDmg += 0.25;
+                break;
+            case "vt":
+                vtDamageIncrease += 0.15;
+                break;
+            case "os":
+                osExtraExplosives += 1;
+                osSkills += 1;
+                break;
+            case "rc":
+                break;
+            case "fc":
+                break;
+            case "un":
+                break;
+            case "woc":
+                wocExtraAmmo += 0.50;
+                wocReloadSpeed += 20;
+                break;
+            case "fa":
+                break;
+            case "gs":
+                break;
+            case "reap":
+                break;
+            case "tc":
+                tcDamageBoost += 0.20;
+                break;
+            case "cdg":
+                cdgDamageBoost += 0.5;
+                break;
+            case "cs":
+                csCritDamage += 1;
+                break;
+        }
+    });
+
+    const c4 = findItem("15");
+    if (osSkills >= 2) {
+        c4.cap = 2;
+    }
+    else {
+        c4.cap = 1;
+    }
+
+    const scoutArmour = findItem("24");
+    const frontlineArmour = findItem("41");
+    if (armourProf >= 1) {
+        scoutArmour.weight = 6;
+        frontlineArmour.weight = 10;
+    }
+    else {
+        scoutArmour.weight = 10;
+        frontlineArmour.weight = 16;
+    }
+
+    updateAmmoTooltips(1 + arExtraAmmo + wocExtraAmmo);
+    setSkillPointsLabelColours();
+
+    const excessDodgeWeight = Math.max(getRawWeight() - 12, 0);
+    const excessStaminaConsumptionWeight = Math.max(getWeight() - 14, 0);
+    const excessLowerStaminaConsumptionWeight = Math.min(excessStaminaConsumptionWeight, 8);
+    const excessHigherStaminaConsumptionWeight = Math.min(Math.max(excessStaminaConsumptionWeight - 8, 0), 24);
+    const excessLowerSpeedWeight = Math.min(Math.max(getWeight() - 22, 0), 38);
+    const excessHigherSpeedWeight = Math.min(Math.max(getWeight() - 38, 0), 46);
+
+    const dodgeFactor = 1 - 1/48;
+    const lowerStaminaConsumptionFactor = 0.0533;
+    const higherStaminaConsumptionFactor = 0.036;
+    const lowerSpeedFactor = 0.01;
+    const higherSpeedFactor = 0.02375;
+
+    let dodgeRate = (lpDodgeChance + htDodgeChance) * Math.pow(dodgeFactor, excessDodgeWeight);
+    let staminaConsumptionRate =  9 * (1 + (lowerStaminaConsumptionFactor * excessLowerStaminaConsumptionWeight) + (higherStaminaConsumptionFactor * excessHigherStaminaConsumptionWeight));
+    const speedEncumberance = 1 - (((lowerSpeedFactor * excessLowerSpeedWeight) + (higherSpeedFactor * excessHigherSpeedWeight)) * (bruteStrength > 1 ? 1 : 0.75));
+
+    const speed = 1 * speedEncumberance;
+    const crouchSpeed = (agility > 1 ? 0.77 : 0.7) * speedEncumberance;
+    const sprintSpeed = (agility > 1 ? 1.66 : 1.6) * speedEncumberance;
+    const crouchedSprintSpeed = 1.05 * speedEncumberance;
+
+
+    const baseDamage = 100 * (1 + vtDamageIncrease);
 
     document.getElementById('class').innerText = calculateClassFromSkillList();
     document.getElementById('health').innerText = (100 + vitMaxHealth).toString();
+    document.getElementById('damageReduction').innerText = (hasArmourEquipped() ? reDamageReduction * 100 : 0).toString();
+    document.getElementById('effectiveHealth').innerText = ((100 + vitMaxHealth) / (( 1 - (hasArmourEquipped() ? reDamageReduction : 0)) * (1 - dodgeRate))).toFixed(2).toString();
+
     document.getElementById('stamina').innerText = (100 + conMaxStamina).toString();
-    document.getElementById('staminaRegenRate').innerText = (15 * (1.0 + conStamRegen) * (agility >= 2 ? 1.5 : 1)).toString();
-    document.getElementById('dodgeChance').innerText = (lpDodgeRate * ((excessRawWeight * 1.0208) + 1)).toString();
-    document.getElementById('crouchedDodgeChance').innerText = ((lpDodgeRate + htCrouchedDodgeChance) * (excessRawWeight * 1.0208)).toString();
+    document.getElementById('staminaRegenRate').innerText = (15 * (1.0 + conStamRegen) * (agility >= 2 ? 1.5 : 1)).toFixed(2).toString();
+    document.getElementById('staminaConsumptionRate').innerText = (staminaConsumptionRate).toFixed(2).toString();
+
+    document.getElementById('dodgeChance').innerText = (100 * dodgeRate).toFixed(2).toString();
     document.getElementById('critChance').innerText = (ciCritRate + lsCritChance).toString();
     document.getElementById('reloadSpeed').innerText = (100 + fhReloadSpeed + wocReloadSpeed + hpReloadSpeed).toString();
+
     document.getElementById('appliedForceSpeed').innerText = (100 + afDrillSpeed).toString();
     document.getElementById('lockpickingSpeed').innerText = (100 + fhLockpickSpeed).toString();
     document.getElementById('hackingSpeed').innerText = (100 + eaHackSpeed).toString();
     document.getElementById('networkResourcesUsage').innerText = (1.0 - (ciHackResourceCost / 100)).toString();
     document.getElementById('techUseSpeed').innerText = (100 + teTechItems).toString();
+
     document.getElementById('crouchedDetectionSpeed').innerText = (1.0 - (lpDetectionSpeed / 100)).toString();
     document.getElementById('suspiciousDetectionSpeed').innerText = (1.0 - (disSuspiciousDetectionSpeed / 100)).toString();
     document.getElementById('disguisedDetectionSpeed').innerText = (1.0 - (masDisguiseDetectionSpeed / 100)).toString();
     document.getElementById('cameraDetectionSpeed').innerText = (1.0 - (sdCameraDetection / 100)).toString();
-    document.getElementById('weight').innerText = weight.toString();
+
+    document.getElementById('weight').innerText = getWeight().toString();
     document.getElementById('rawWeight').innerText = getRawWeight().toString();
+
+    document.getElementById('critDamage').innerText = (baseDamage * (csCritDamage + 1.5)).toFixed(2).toString();
+    document.getElementById('headshotDamage').innerText = (baseDamage * (exeHeadshotDmg + 1.5)).toFixed(2).toString();
+    document.getElementById('headshotCritDamage').innerText = (baseDamage * (exeHeadshotDmg + 1.5) * (csCritDamage + 1.5)).toFixed(2).toString();
+    document.getElementById('damage').innerText = (baseDamage).toFixed(2).toString();
+    document.getElementById('ammo').innerText = (100 * (1 + arExtraAmmo + wocExtraAmmo)).toString();
+
+    document.getElementById('speed').innerText = (speed).toFixed(2).toString();
+    document.getElementById('crouchSpeed').innerText = (crouchSpeed).toFixed(2).toString();
+    document.getElementById('sprintSpeed').innerText = (sprintSpeed).toFixed(2).toString();
+    document.getElementById('crouchedSprintSpeed').innerText = (crouchedSprintSpeed).toFixed(2).toString();
 
 
     let coreSkillMessage = "";
