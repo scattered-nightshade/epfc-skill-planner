@@ -1,10 +1,10 @@
 "use strict";
 
-const levelCap = 55;
+const levelCap = 50;
 const minorSkillCost = 1;
-const majorSkillCost = 2;
-const coreSkillCost = 2;
-const ignoreFirstCoreSkill = true;
+const majorSkillCost = 1;
+const coreSkillCost = 1;
+const ignoreFirstCoreSkill = false;
 
 const emptyPlayer = {
     heldItems: [],
