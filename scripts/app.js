@@ -1141,7 +1141,7 @@ function getWeight() {
     if (player.bag) {
         for (const id of player.bag.items) {
             const item = findItem(id);
-            if (player.bag.bagId == 'backpack') {
+            if (player.bag.id == 'backpack') {
                 total += item.weight * 0.8;
             }
             else {
