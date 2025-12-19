@@ -1397,12 +1397,9 @@ function updateStatOverview() {
     });
 
     const c4 = findItem("15");
-    if (osSkills >= 2) {
-        c4.cap = 2;
-    }
-    else {
-        c4.cap = 1;
-    }
+    c4.cap = osSkills + 1;
+
+
 
     const scoutArmour = findItem("24");
     const frontlineArmour = findItem("41");
